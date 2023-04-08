@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: capstone_db
+    database: capstone_db
+    schema: public
+    tables:
+      - name: raw_aws_spec_info
+      - name: raw_aws_spot_prices
+      - name: raw_aws_on_demand_prices

@@ -1,0 +1,13 @@
+pandas
+prefect
+prefect-aws
+prefect-dbt
+s3fs
+SQLAlchemy
+psycopg2-binary
+prefect-sqlalchemy
+redshift_connector
+boto3
+fastparquet
+dbt-core
+dbt-redshift 
