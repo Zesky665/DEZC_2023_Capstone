@@ -13,6 +13,41 @@ from prefect_dbt.cloud import DbtCloudCredentials
 from prefect import get_run_logger
 from pathlib import Path
 
+
+@task(name="setup .aws credentials")
+def create_aws_creds():
+    
+    aws_key_id = ""
+    aws_key = ""
+    aws_region = ""
+    
+    if ("AWS_KEY_ID" in os.environ):
+        aws_key_id = os.environ['AWS_KEY_ID']
+ 
+    if ("AWS_KEY" in os.environ):
+        aws_key = os.environ['AWS_KEY']
+        
+    if ("AWS_REGION" in os.environ):
+        aws_region = os.environ['AWS_REGION']
+
+    config = '''
+[default]
+region = {0}'''.format(aws_region)
+    
+    f = open("/root/.aws/config", "w")
+    f.write(config)
+    f.close()
+    
+    credentials = '''
+[default]
+aws_access_key_id = {0}
+aws_secret_access_key = {1}'''.format(aws_key_id, aws_key)
+    
+    f = open("/root/.aws/credentials", "w")
+    f.write(credentials)
+    f.close()
+
+
 @task(name="deploy_aws")
 def deploy_aws_credentials_block(aws_key_id, aws_key, aws_region):
     logger = get_run_logger()

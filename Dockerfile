@@ -20,6 +20,12 @@ RUN chmod +x prefect_setup.sh
 
 RUN mkdir root/.dbt
 
+RUN mkdir root/.aws
+
+RUN touch root/.aws/config
+
+RUN touch root/.aws/credentials
+
 COPY flows opt/flows
 
 RUN touch opt/flows/__init__.py
@@ -27,5 +33,9 @@ RUN touch opt/flows/__init__.py
 RUN touch opt/__init__.py
 
 RUN touch __init__.py
+
+ENTRYPOINT ["./prefect_setup.sh"]
+
+
 
 

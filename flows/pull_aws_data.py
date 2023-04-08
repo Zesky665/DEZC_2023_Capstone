@@ -1,6 +1,7 @@
 from prefect_aws import AwsCredentials, S3Bucket
 from prefect import flow, task, get_run_logger
 from datetime import datetime
+from prefect.filesystems import S3
 import pandas as pd
 
 @task(name="pull spot price data and store in s3")
@@ -44,7 +45,7 @@ def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: 
     
     fdf.to_parquet(file_name, engine='fastparquet')
 
-    s3_bucket = S3Bucket.load("capstone-s3-bucket")
+    s3_bucket = S3.load("capstone-sf3s-bucket")
     
     s3_bucket.upload_from_path(file_name, f'aws_data/{file_name}')
     
@@ -53,7 +54,7 @@ def upload_on_demand_price_data():
     logger = get_run_logger()
     logger.info("INFO : Starting.")
 
-    data = pd.read_json("/opt/Prefect/Flows/misc/on_demand_ec2.json")
+    data = pd.read_json("/opt/flows/misc/on_demand_ec2.json")
 
     df = pd.DataFrame(data)
 
@@ -63,7 +64,7 @@ def upload_on_demand_price_data():
 
     fdf.to_parquet('on_demand_prices.parquet', engine='fastparquet')
 
-    s3_bucket = S3Bucket.load("capstone-s3-bucket")
+    s3_bucket = S3.load("capstone-sf3s-bucket")
     
     s3_bucket.upload_from_path("on_demand_prices.parquet", "aws_data/on_demand_prices.parquet")
     
@@ -105,7 +106,7 @@ def pull_spec_info_data_from_aws():
 
     fdf.to_parquet('spec_info.parquet', engine='fastparquet')
 
-    s3_bucket = S3Bucket.load("capstone-s3-bucket")
+    s3_bucket = S3.load("capstone-sf3s-bucket")
     
     s3_bucket.upload_from_path("spec_info.parquet", "aws_data/spec_info.parquet")
     

@@ -4,33 +4,6 @@ from pull_aws_data import pull_aws_data
 from prefect import get_run_logger, flow, task
 from prefect.deployments import Deployment
 from prefect.filesystems import S3
-from prefect_aws import AwsCredentials, S3Bucket
-
-@task(name="setup .aws credentials")
-def create_aws_creds():
-    if ("AWS_KEY_ID" in os.environ):
-        aws_key_id = os.environ['AWS_KEY_ID']
- 
-    if ("AWS_KEY" in os.environ):
-        aws_key = os.environ['AWS_KEY']
-        
-    if ("AWS_REGION" in os.environ):
-        aws_region = os.environ['AWS_REGION']
-
-    config = '''
-    [default]
-    region = {0}'''.format(aws_region)
-
-
-    credentials = '''
-    [default]
-    aws_access_key_id = {0}
-    aws_secret_access_key = {1}'''.format(aws_key_id, aws_key)
-    
-    f = open("", "w")
-    f.write(profile_yml)
-    f.close()
-
 
 @task(name="deploy deploy flow")
 def deploy_deploy_flow():
