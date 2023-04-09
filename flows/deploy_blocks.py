@@ -16,7 +16,8 @@ from pathlib import Path
 
 @task(name="setup .aws credentials")
 def create_aws_creds():
-    
+    logger = get_run_logger()
+    logger.info("INFO: Starting creating local aws credentials.")
     aws_key_id = ""
     aws_key = ""
     aws_region = ""
@@ -38,6 +39,8 @@ region = {0}'''.format(aws_region)
     f.write(config)
     f.close()
     
+    logger.info("INFO: Created local aws config file.")
+    
     credentials = '''
 [default]
 aws_access_key_id = {0}
@@ -47,11 +50,14 @@ aws_secret_access_key = {1}'''.format(aws_key_id, aws_key)
     f.write(credentials)
     f.close()
 
+    logger.info("INFO: Created local aws credentials file.")
+
+    logger.info("INFO: Finished creating local aws credentials.")
 
 @task(name="deploy_aws")
 def deploy_aws_credentials_block(aws_key_id, aws_key, aws_region):
     logger = get_run_logger()
-    logger.info("INFO: Started aws creds block deployment.")
+    logger.info("INFO: Starting aws creds block deployment.")
     
     aws_credentials = AwsCredentials(
     aws_access_key_id = aws_key_id,
@@ -67,7 +73,7 @@ def deploy_aws_credentials_block(aws_key_id, aws_key, aws_region):
 @task(name="deploy_s3")
 def deploy_s3_block(aws_key_id, aws_key):
     logger = get_run_logger()
-    logger.info("INFO: Started s3 block deployment.")
+    logger.info("INFO: Starting S3 block deployment.")
     
     # S3 values
     s3_block_name = "deployments"
@@ -76,6 +82,7 @@ def deploy_s3_block(aws_key_id, aws_key):
     
     logger.info(f'{s3_block_name} {bucket_name} {bucket_path}')
     
+    # S3 vanila bucket
     sf3s = S3(
         bucket_path=bucket_path,
         aws_access_key_id=aws_key_id,
@@ -84,8 +91,10 @@ def deploy_s3_block(aws_key_id, aws_key):
     
     sf3s.save("capstone-sf3s-bucket", overwrite=True)
     
+    logger.info("INFO: Starting S3 vanila bucket block deployment.")
     aws_creds = AwsCredentials.load("aws-creds")
 
+    # S3 official bucket
     boto3 = S3Bucket(
         bucket_name="my-zoomcamp-capstone-bucket-zharec",
         aws_credentials=aws_creds,
@@ -93,12 +102,15 @@ def deploy_s3_block(aws_key_id, aws_key):
     )
     
     boto3.save("capstone-boto3-bucket", overwrite=True)
-    logger.info("INFO: Finished se bucket block deployment.")
+    
+    logger.info("INFO: Finished S3 official bucket block deployment.")
+    
+    logger.info("INFO: Finished S3 bucket block deployment.")
     
 @task(name="deploy secret value")
 def deploy_redshift_password(redshift_password):
     logger = get_run_logger()
-    logger.info("INFO: Started redshift secret deployment.")
+    logger.info("INFO: Starting redshift secret deployment.")
     
     secret = Secret(
         value=redshift_password,
@@ -110,12 +122,7 @@ def deploy_redshift_password(redshift_password):
 @task(name="deploy redshift credentials")
 def deploy_redshift_credentials(host, database, port, username, password):
     logger = get_run_logger()
-    logger.info("INFO: Started redshift block deployment.")
-    logger.info(f'DB_VALEU: {host}')
-    logger.info(f'DB_VALEU: {database}')
-    logger.info(f'DB_VALEU: {port}')
-    logger.info(f'DB_VALEU: {username}')
-    logger.info(f'DB_VALEU: {password}')
+    logger.info("INFO: Starting redshift block deployment.")
     
     sqlalchemy_credentials = DatabaseCredentials(
         driver=SyncDriver.POSTGRESQL_PSYCOPG2,
@@ -132,7 +139,7 @@ def deploy_redshift_credentials(host, database, port, username, password):
 @task(name="deploy dbt credentials")
 def deploy_dbt_credentials_block(dbt_api_key, dbt_account_id):
     logger = get_run_logger()
-    logger.info("INFO: Started dbt credentials block deployment.")
+    logger.info("INFO: Starting dbt credentials block deployment.")
 
     DbtCloudCredentials(
         api_key=dbt_api_key,
@@ -143,7 +150,7 @@ def deploy_dbt_credentials_block(dbt_api_key, dbt_account_id):
 @task(name="deploy dbt profile")
 def deploy_dbt_profile(host, database, port, username, password):
     logger = get_run_logger()
-    logger.info("INFO: Started dbt profile block deployment.")
+    logger.info("INFO: Starting dbt profile block deployment.")
 
     target_configs_extras = dict(
         host=host,
@@ -167,6 +174,8 @@ def deploy_dbt_profile(host, database, port, username, password):
         target_configs=target_configs,
     )
     dbt_cli_profile.save("dbt-profile-redshift",overwrite=True)
+    
+    logger.info("INFO: Finished dbt profile block deployment.")
     
 # def deploy_ecs_task_block():
     
@@ -199,12 +208,17 @@ def deploy_dbt_profile(host, database, port, username, password):
 @flow(name="deploy block flow")
 def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password):
 
+    logger = get_run_logger()
+    logger.info("INFO: Starting block deployment.")
+    
     deploy_aws_credentials_block(aws_key_id, aws_key, aws_region)
     deploy_s3_block(aws_key_id, aws_key)
     deploy_redshift_password(password)
     deploy_redshift_credentials(host, database, port, username, password)
     deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
     deploy_dbt_profile(host, database, port, username, password)
+    
+    logger.info("INFO: Finished block deployment.")
     
 
 if __name__ == "__main__":

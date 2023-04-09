@@ -9,7 +9,7 @@ def create_dbt_profile():
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     logger = get_run_logger()
-    logger.info(f'INFO : {database_block}.')
+    logger.info(f'INFO : Creating dbt profile.')
     profile_yml = f"""
 default:
   outputs:
@@ -28,6 +28,7 @@ config: {{}}
     f = open("/root/.dbt/profiles.yml", "w")
     f.write(profile_yml)
     f.close()
+    logger.info(f'INFO : Created dbt profile.')
     
 @task(name="run dbt staging script")
 def create_staging_tables():

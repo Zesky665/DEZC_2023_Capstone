@@ -8,7 +8,7 @@ from prefect.filesystems import S3
 @task(name="deploy deploy flow")
 def deploy_deploy_flow():
     logger = get_run_logger()
-    logger.info("INFO: Started deploy flow deployment.")
+    logger.info("INFO: Starting deploy flow deployment.")
     s3_block = S3.load("capstone-sf3s-bucket")
 
     deployment = Deployment.build_from_flow(
@@ -26,9 +26,10 @@ def deploy_deploy_flow():
 @task(name="deploy aws etl flow")
 def deploy_aws_etl_flow():
     logger = get_run_logger()
-    logger.info("INFO: Started aws_etl flow deployment.")
+    logger.info("INFO: Starting aws_etl flow deployment.")
     s3_block = S3.load("capstone-sf3s-bucket")
 
+    logger.info("INFO: Starting aws_pull flow deployment.")
     deployment = Deployment.build_from_flow(
         flow=pull_aws_data,
         name="pull data from aws",
@@ -40,6 +41,7 @@ def deploy_aws_etl_flow():
     deployment.apply()
     logger.info("INFO: Finished aws_pull flow deployment.")
     
+    logger.info("INFO: Starting copy_to_redshift flow deployment.")
     deployment = Deployment.build_from_flow(
         flow=copy_to_redshift,
         name="copy to redshift",
@@ -51,7 +53,7 @@ def deploy_aws_etl_flow():
     deployment.apply()
     logger.info("INFO: Finished copy_to_redshift flow deployment.")
     
-    
+    logger.info("INFO: Starting run_dbt flow deployment.")
     deployment = Deployment.build_from_flow(
         flow=run_dbt,
         name="run dbt models",
@@ -61,7 +63,7 @@ def deploy_aws_etl_flow():
         storage=s3_block,
     )
     deployment.apply()
-    logger.info("INFO: Finished aws_etl flow deployment.")
+    logger.info("INFO: Finished run_dbt flow deployment.")
     
 
     logger.info("INFO: Finished aws_etl flow deployment.")
@@ -70,7 +72,7 @@ def deploy_aws_etl_flow():
 @flow(name="deploy flows flow")
 def deploy_flows():
     logger = get_run_logger()
-    logger.info("INFO: Started flow deployment.")
+    logger.info("INFO: Starting flow deployment.")
     deploy_deploy_flow()
     deploy_aws_etl_flow()
     logger.info("INFO: Finished flow deployment.")

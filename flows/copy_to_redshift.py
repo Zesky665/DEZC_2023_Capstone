@@ -4,18 +4,14 @@ from prefect.blocks.system import Secret
 from prefect import flow, task, get_run_logger
 import redshift_connector
 
-@task(name="create table")
+@task(name="Redshift initial setup")
 def redshift_setup():
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     logger = get_run_logger()
-    logger.info("INFO : Starting.")
+    logger.info("INFO : Starting redshift setup.")
     logger.info("INFO : Connecting to Redshift.")
-    logger.info(f'INFO : Redshfit creds: host: {database_block.host}')
-    logger.info(f'INFO : Redshfit creds: host: {database_block.database}')
-    logger.info(f'INFO : Redshfit creds: host: {database_block.port}')
-    logger.info(f'INFO : Redshfit creds: host: {database_block.username}')
-    logger.info(f'INFO : Redshfit creds: host: {redshift_secret.get()}')
+    
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -25,20 +21,21 @@ def redshift_setup():
     )
     cursor = conn.cursor()
     conn.autocommit = True
-    logger.info(f'INFO : ${cursor}')
     logger.info("INFO : Connected to Redshift.")
-    logger.info(f'INFO: Create TEMP tables')
+    logger.info(f'INFO: Creating TEMP tables.')
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL);")
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPEC_INFO( instance_type varchar(100) NOT NULL, free_tier BOOL NOT NULL, architecture varchar(100), cpu_speed REAL NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL);")
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL);")
-   
-@task(name="copy spot price data file to redshift")
+    logger.info(f'INFO: Finished redshift setup.')
+    
+@task(name="Copy spot price data file to redshift")
 def copy_spot_prices_to_redshift():
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     
+    logger.info("INFO : Connecting to Redshift.")
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -50,6 +47,7 @@ def copy_spot_prices_to_redshift():
     cursor = conn.cursor()
     conn.autocommit = False
     
+    logger.info("INFO : Connecting to S3 bucket.")
     aws_creds = AwsCredentials.load("aws-creds")
     client = aws_creds.get_boto3_session().client("s3")
     response = client.list_objects_v2(
@@ -63,7 +61,7 @@ def copy_spot_prices_to_redshift():
     contents = [x for x in contents if "spot_prices" in x]
     for content in contents:
             logger.info("INFO : Connected to Redshift.")
-            logger.info("INFO : Copy to TEMP_Table.")
+            logger.info("INFO : Copy to {file_name} TEMP_Table.".format(file_name = content))
             copy_str = "copy TEMP_AWS_SPOT_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/{file_name}' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(file_name = content)
             cursor.execute(copy_str)
     conn.commit()
@@ -76,6 +74,7 @@ def copy_on_demand_to_redshift():
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     
+    logger.info("INFO : Connecting to Redshift.")
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -99,6 +98,7 @@ def copy_spec_info_to_redshift():
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     
+    logger.info("INFO : Connecting to Redshift.")
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -118,10 +118,11 @@ def copy_spec_info_to_redshift():
 @task(name="clean spot price data.")
 def clean_spot_price_data():
     logger = get_run_logger()
-    logger.info("INFO : Begin copying data to redshift.")
+    logger.info("INFO : Begin cleaning spot data in redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     
+    logger.info("INFO : Connecting to Redshift.")
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -145,10 +146,11 @@ def clean_spot_price_data():
 @task(name="clean on-demand data")
 def clean_on_demand_data():
     logger = get_run_logger()
-    logger.info("INFO : Begin copying data to redshift.")
+    logger.info("INFO : Begin cleaning on-demand data in redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     
+    logger.info("INFO : Connecting to Redshift.")
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -171,10 +173,11 @@ def clean_on_demand_data():
 @task(name="clean spec info data")
 def clean_spec_info_data():
     logger = get_run_logger()
-    logger.info("INFO : Begin copying data to redshift.")
+    logger.info("INFO : Begin cleaning spec-info data in redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
     redshift_secret = Secret.load("redshift-password")
     
+    logger.info("INFO : Connecting to Redshift.")
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -198,6 +201,8 @@ def clean_spec_info_data():
     
 @flow(name="aws_to_redshift_etl") 
 def copy_to_redshift():
+    logger = get_run_logger()
+    logger.info("INFO : Begin copying data to redshift.")
     redshift_setup()
     copy_spot_prices_to_redshift()
     copy_on_demand_to_redshift()
@@ -205,6 +210,7 @@ def copy_to_redshift():
     clean_spot_price_data()
     clean_on_demand_data()
     clean_spec_info_data()
+    logger.info("INFO : Finished copying data to redshift.")
  
 if __name__ == "__main__":
 
