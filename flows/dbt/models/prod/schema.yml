@@ -1,0 +1,11 @@
+version: 2
+
+models:
+    - name: prod_aws_spot_catalog
+      description: "{{ doc('aws_catalog') }}"
+      columns:
+          - name: time_stamp
+            description: "The primary key for this table"
+            tests:
+                - unique
+                - not_null

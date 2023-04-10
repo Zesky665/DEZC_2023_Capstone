@@ -168,3 +168,55 @@ resource "aws_eip" "capstone_web_eip" {
     Name = "capstone_web_eip"
   }
 }
+
+resource "aws_iam_role" "ec2_role" {
+  name = "ec2_role"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "redshift.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "amazon_s3_read_only_access"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:Get*",
+            "s3:List*",
+            "s3-object-lambda:Get*",
+            "s3-object-lambda:List*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+
+  tags = {
+    tag-key = "tag-value"
+  }
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "ec2_profile"
+  role = aws_iam_role.ec2_role.name
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}

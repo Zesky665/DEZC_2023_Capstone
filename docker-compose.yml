@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  prefect_agent:
+    image: "zharec/prefect_agent:latest"
+    env_file:
+      - .env
+  
