@@ -23,9 +23,9 @@ def redshift_setup():
     conn.autocommit = True
     logger.info("INFO : Connected to Redshift.")
     logger.info(f'INFO: Creating TEMP tables.')
-    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL);")
-    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPEC_INFO( instance_type varchar(100) NOT NULL, free_tier BOOL NOT NULL, architecture varchar(100), cpu_speed REAL NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL);")
-    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL, provider varchar(100) NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPEC_INFO( instance_type varchar(100) NOT NULL, free_tier BOOL NOT NULL, architecture varchar(100), cpu_speed REAL NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL, provider varchar(100) NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL, provider varchar(100) NOT NULL);")
     logger.info(f'INFO: Finished redshift setup.')
     
 @task(name="Copy spot price data file to redshift")
@@ -36,6 +36,11 @@ def copy_spot_prices_to_redshift():
     redshift_secret = Secret.load("redshift-password")
     
     logger.info("INFO : Connecting to Redshift.")
+    logger.info("INFO : Redshift: {0}.".format(database_block.host))
+    logger.info("INFO : Redshift: {0}.".format(database_block.database))
+    logger.info("INFO : Redshift: {0}.".format(database_block.port))
+    logger.info("INFO : Redshift: {0}.".format(database_block.username))
+    logger.info("INFO : Redshift: {0}.".format(redshift_secret.get()))
     conn = redshift_connector.connect(
         host=database_block.host,
         database=database_block.database,
@@ -135,7 +140,7 @@ def clean_spot_price_data():
     conn.autocommit = False
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AWS_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AWS_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL, provider varchar(100) NOT NULL);")
     conn.commit()
     cursor.execute("INSERT INTO RAW_AWS_SPOT_PRICES (SELECT * FROM TEMP_AWS_SPOT_PRICES as A WHERE time_stamp NOT IN (SELECT time_stamp FROM RAW_AWS_SPOT_PRICES));")
     conn.commit()
@@ -163,7 +168,7 @@ def clean_on_demand_data():
     conn.autocommit = False
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL, provider varchar(100) NOT NULL);")
     cursor.execute("INSERT INTO RAW_AWS_ON_DEMAND_PRICES (SELECT * FROM TEMP_AWS_ON_DEMAND_PRICES as A WHERE instance_type NOT IN (SELECT instance_type FROM RAW_AWS_ON_DEMAND_PRICES));")
     conn.commit()
     cursor.execute("DROP TABLE TEMP_AWS_ON_DEMAND_PRICES")
@@ -190,7 +195,7 @@ def clean_spec_info_data():
     conn.autocommit = False
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AWS_SPEC_INFO( instance_type varchar(100) NOT NULL, free_tier BOOL NOT NULL, architecture varchar(100), cpu_speed REAL NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AWS_SPEC_INFO( instance_type varchar(100) NOT NULL, free_tier BOOL NOT NULL, architecture varchar(100), cpu_speed REAL NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL, provider varchar(100) NOT NULL);")
     cursor.execute("INSERT INTO RAW_AWS_SPEC_INFO (SELECT * FROM TEMP_AWS_SPEC_INFO as A WHERE instance_type NOT IN (SELECT instance_type FROM RAW_AWS_SPEC_INFO));")
     conn.commit()
     cursor.execute("DROP TABLE TEMP_AWS_SPEC_INFO")
