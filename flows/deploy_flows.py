@@ -1,3 +1,4 @@
+from datetime import datetime
 from copy_to_redshift import copy_to_redshift
 from run_dbt import run_dbt
 from pull_aws_data import pull_aws_data
@@ -33,7 +34,7 @@ def deploy_aws_etl_flow():
     deployment = Deployment.build_from_flow(
         flow=pull_aws_data,
         name="pull data from aws",
-        parameters={},
+        parameters={"start_date": datetime.fromisoformat('2022-01-01'), "end_date": datetime.today(), "azs": ["eu-central-1a", "eu-central-1b"]},
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
