@@ -54,6 +54,7 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
       with:
+        terraform_version: 1.3.7
         terraform_wrapper: false
         cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         
@@ -75,12 +76,12 @@ jobs:
     - name: Terraform Init
       run: |
        cd infra/${{ github.event.inputs.module }}
-       touch metabase_kp.pub
-       echo '${{ secrets.METABASE_PUBLIC_KEY }}' >> metabase_kp.pub
+       touch capstone_kp.pub
+       echo '${{ secrets.CAPSTONE_PUBLIC_KEY }}' >> capstone_kp.pub
        terraform init
        touch secrets.tfvars
-       echo "redshift_password='${{ secrets.REDSHIFT_PASSWORD }}'" >> secrets.tfvars
-       echo "my_ip_address='${{ secrets.MY_IP_ADDRESS }}''" >> secrets.tfvars
+       echo 'redshift_password="${{ secrets.REDSHIFT_PASSWORD }}"' >> secrets.tfvars
+       echo 'my_ip_address="${{ secrets.MY_IP_ADDRESS }}"' >> secrets.tfvars
       
     # Checks that all Terraform configuration files adhere to a canonical format
     - name: Terraform Validate
@@ -93,8 +94,7 @@ jobs:
     - name: Terraform Plan
       run: |
        cd infra/${{ github.event.inputs.module }}
-       terraform plan -var redshift_password='${{ secrets.REDSHIFT_PASSWORD }}' \
-                          -var my_ip_address='${{ secrets.MY_IP_ADDRESS }}'
+       terraform plan -var-file=secrets.tfvars
 
       # On push to "main", build or change infrastructure according to Terraform configuration files
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
@@ -102,8 +102,7 @@ jobs:
       run: |
        cd infra/${{ github.event.inputs.module }}
        touch output.json
-       terraform apply -var redshift_password='${{ secrets.REDSHIFT_PASSWORD }}' \
-                           -var my_ip_address='${{ secrets.MY_IP_ADDRESS }}' \
+       terraform apply -var-file=secrets.tfvars \
                            --auto-approve \
                            -json >> output.json
        
