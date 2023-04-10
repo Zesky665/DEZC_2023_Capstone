@@ -210,7 +210,7 @@ def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, 
 
     logger = get_run_logger()
     logger.info("INFO: Starting block deployment.")
-    
+    create_aws_creds()
     deploy_aws_credentials_block(aws_key_id, aws_key, aws_region)
     deploy_s3_block(aws_key_id, aws_key)
     deploy_redshift_password(password)
