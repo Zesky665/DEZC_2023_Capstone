@@ -85,10 +85,8 @@ jobs:
     - name: Terraform Apply EC2
       run: |
        cd infra/ec2
-       touch output.json
        terraform apply -var-file=secrets.tfvars \
-                           --auto-approve \
-                           -json >> output.json
+                           --auto-approve
                            
     - name: Terraform Init S3
       run: |
@@ -111,10 +109,8 @@ jobs:
     - name: Terraform Apply S3
       run: |
        cd infra/s3
-       touch output.json
        terraform apply -var-file=secrets.tfvars \
-                           --auto-approve \
-                           -json >> output.json
+                           --auto-approve
                                                                     
     - name: Terraform Init Redshift
       run: |
@@ -137,7 +133,5 @@ jobs:
     - name: Terraform Apply Redshift
       run: |
        cd infra/redshift
-       touch output.json
        terraform apply -var-file=secrets.tfvars \
-                           --auto-approve \
-                           -json >> output.json
+                           --auto-approve
