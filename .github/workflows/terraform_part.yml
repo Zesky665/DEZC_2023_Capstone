@@ -1,4 +1,4 @@
-name: 'Terraform-Deploy'
+name: 'Deploy-TF-Module'
 
 on:
  workflow_dispatch:
