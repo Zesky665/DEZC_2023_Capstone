@@ -1,0 +1,47 @@
+name: Docker Image CI
+
+on:
+ workflow_dispatch:
+    inputs:
+      repo:
+        description: Name of the repo
+        required: true
+        default: 'zharec'
+        type: string
+      image:
+        description: Name of the image
+        required: true
+        default: 'prefect_agent'
+        type: string
+      tag:
+        description: Tag of the image
+        required: true
+        default: 'latest'
+        type: string
+        
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.event.inputs.image }}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build and Push the Docker image
+      run: |
+       docker build -t ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }} .
+       docker login -u=${{ secrets.DOCKER_USERNAME }}  --password-stdin <<< ${{ secrets.DOCKER_PASSWORD }}
+       docker tag ${{ github.event.inputs.image }}:${{ github.event.inputs.tag }} ${{ github.event.inputs.repo }}/${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+       docker push ${{ github.event.inputs.repo }}/${{ github.event.inputs.image }}:${{ github.event.inputs.tag }}
+       
+
