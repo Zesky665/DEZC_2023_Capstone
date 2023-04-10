@@ -64,7 +64,7 @@ jobs:
 
     - name: Terraform Init EC2
       run: |
-       cd infra/${{ github.event.inputs.module }}
+       cd infra/ec2
        touch capstone_kp.pub
        echo '${{ secrets.CAPSTONE_PUBLIC_KEY }}' >> capstone_kp.pub
        terraform init
