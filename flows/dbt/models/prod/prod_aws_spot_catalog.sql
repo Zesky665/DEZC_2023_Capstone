@@ -24,7 +24,8 @@ aws_spec_info as (
 
 source_data as (
 
-    SELECT p.type, 
+    SELECT p.instance_type, 
+       p.provider,
        s.vpc,
        s.cpu_speed,
        s.memory,

@@ -11,6 +11,12 @@ def redshift_setup():
     logger = get_run_logger()
     logger.info("INFO : Starting redshift setup.")
     logger.info("INFO : Connecting to Redshift.")
+
+    logger.info("INFO : Redshift: {0}.".format(database_block.host))
+    logger.info("INFO : Redshift: {0}.".format(database_block.database))
+    logger.info("INFO : Redshift: {0}.".format(database_block.port))
+    logger.info("INFO : Redshift: {0}.".format(database_block.username))
+    logger.info("INFO : Redshift: {0}.".format(redshift_secret.get()))
     
     conn = redshift_connector.connect(
         host=database_block.host,
