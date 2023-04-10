@@ -1,0 +1,143 @@
+name: 'Deploy-TF-All'
+
+on:
+ workflow_dispatch:
+    inputs:
+      cpu:
+        description: CPU for the agent
+        required: true
+        default: '1024'
+        type: choice
+        options: ['256', '512', '1024', '2048', '4096']
+      memory:
+        description: Memory for the agent
+        required: true
+        default: '2048'
+        type: choice
+        options: ['512', '1024', '2048', '4096', '5120', '6144', '7168', '8192']
+      name:
+        description: Name of the agent
+        required: true
+        default: 'prefect-default'
+        type: string
+      image:
+        description: Name of the image
+        required: true
+        default: 'zharec/prefect_agent:latest'
+        type: string
+        
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-20.04
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.3.7
+        terraform_wrapper: false
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Configure AWS Credentials Action For GitHub Actions
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1 
+
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9.2' 
+
+    - name: Terraform Init EC2
+      run: |
+       cd infra/${{ github.event.inputs.module }}
+       touch capstone_kp.pub
+       echo '${{ secrets.CAPSTONE_PUBLIC_KEY }}' >> capstone_kp.pub
+       terraform init
+       touch secrets.tfvars
+       echo 'redshift_password="${{ secrets.REDSHIFT_PASSWORD }}"' >> secrets.tfvars
+       echo 'my_ip_address="${{ secrets.MY_IP_ADDRESS }}"' >> secrets.tfvars
+      
+    - name: Terraform Validate EC2
+      run: |
+       cd infra/ec2
+       terraform validate -no-color
+
+    - name: Terraform Plan EC2
+      run: |
+       cd infra/ec2
+       terraform plan -var-file=secrets.tfvars
+
+    - name: Terraform Apply EC2
+      run: |
+       cd infra/ec2
+       touch output.json
+       terraform apply -var-file=secrets.tfvars \
+                           --auto-approve \
+                           -json >> output.json
+                           
+    - name: Terraform Init S3
+      run: |
+       cd infra/s3
+       terraform init
+       touch secrets.tfvars
+       echo 'redshift_password="${{ secrets.REDSHIFT_PASSWORD }}"' >> secrets.tfvars
+       echo 'my_ip_address="${{ secrets.MY_IP_ADDRESS }}"' >> secrets.tfvars
+      
+    - name: Terraform Validate S3
+      run: |
+       cd infra/s3
+       terraform validate -no-color
+       
+    - name: Terraform Plan S3
+      run: |
+       cd infra/s3
+       terraform plan -var-file=secrets.tfvars
+
+    - name: Terraform Apply S3
+      run: |
+       cd infra/s3
+       touch output.json
+       terraform apply -var-file=secrets.tfvars \
+                           --auto-approve \
+                           -json >> output.json
+                                                                    
+    - name: Terraform Init Redshift
+      run: |
+       cd infra/redshift
+       terraform init
+       touch secrets.tfvars
+       echo 'redshift_password="${{ secrets.REDSHIFT_PASSWORD }}"' >> secrets.tfvars
+       echo 'my_ip_address="${{ secrets.MY_IP_ADDRESS }}"' >> secrets.tfvars
+      
+    - name: Terraform Validate Redshift
+      run: |
+       cd infra/redshift
+       terraform validate -no-color
+       
+    - name: Terraform Plan Redshift
+      run: |
+       cd infra/redshift
+       terraform plan -var-file=secrets.tfvars
+
+    - name: Terraform Apply Redshift
+      run: |
+       cd infra/redshift
+       touch output.json
+       terraform apply -var-file=secrets.tfvars \
+                           --auto-approve \
+                           -json >> output.json
