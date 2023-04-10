@@ -1,0 +1,92 @@
+name: 'Destroy-TF-Module'
+
+on:
+ workflow_dispatch:
+    inputs:
+      module:
+        description: Name of the image
+        required: true
+        default: 'ec2'
+        type: string
+        
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-20.04
+    environment: production
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.3.7
+        terraform_wrapper: false
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        
+    # Initializes secret values to be used in the workflow. 
+    - name: Configure AWS Credentials Action For GitHub Actions
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1 
+        
+     # Sets up python on a version that isn't bugged.
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9.2' 
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: |
+       cd infra/${{ github.event.inputs.module }}
+       touch capstone_kp.pub
+       echo '${{ secrets.CAPSTONE_PUBLIC_KEY }}' >> capstone_kp.pub
+       terraform init
+       touch secrets.tfvars
+       echo 'redshift_password="${{ secrets.REDSHIFT_PASSWORD }}"' >> secrets.tfvars
+       echo 'my_ip_address="${{ secrets.MY_IP_ADDRESS }}"' >> secrets.tfvars
+      
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Validate
+      id: validate
+      run: |
+       cd infra/${{ github.event.inputs.module }}
+       terraform validate -no-color
+       
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: |
+       cd infra/${{ github.event.inputs.module }}
+       terraform plan -var-file=secrets.tfvars
+
+      # On push to "main", build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+    - name: Terraform Destroy
+      run: |
+       cd infra/${{ github.event.inputs.module }}
+       touch output.json
+       terraform destroy -var-file=secrets.tfvars \
+                           --auto-approve \
+                           -json >> output.json
+       
+
+
+
+
+       
+       
