@@ -10,10 +10,6 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-COPY start_agent.sh .
-
-RUN chmod +x start_agent.sh
-
 COPY prefect_setup.sh .
 
 RUN chmod +x prefect_setup.sh
