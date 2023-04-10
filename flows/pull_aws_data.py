@@ -51,7 +51,7 @@ def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: 
     logger.info("INFO : Converting data into a parquet file.")
     fdf.to_parquet(file_name, engine='fastparquet')
 
-    s3_bucket = S3.load("capstone-sf3s-bucket")
+    s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     logger.info("INFO : Uploading parquet file to S3 bucket.")
     s3_bucket.upload_from_path(file_name, f'aws_data/{file_name}')
     
@@ -74,7 +74,7 @@ def upload_on_demand_price_data():
     logger.info("INFO : Converting data to parquet file.")
     fdf.to_parquet('on_demand_prices.parquet', engine='fastparquet')
 
-    s3_bucket = S3.load("capstone-sf3s-bucket")
+    s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     
     logger.info("INFO : Uploading parquet file to S3 bucket.")
     s3_bucket.upload_from_path("on_demand_prices.parquet", "aws_data/on_demand_prices.parquet")
@@ -123,7 +123,7 @@ def pull_spec_info_data_from_aws():
     logger.info("INFO : Convert data to parquet file.")
     fdf.to_parquet('spec_info.parquet', engine='fastparquet')
 
-    s3_bucket = S3.load("capstone-sf3s-bucket")
+    s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     
     logger.info("INFO : Upload parquet file to S3 bucket.")
     s3_bucket.upload_from_path("spec_info.parquet", "aws_data/spec_info.parquet")
@@ -143,7 +143,7 @@ def pull_aws_data(start_date: datetime, end_date: datetime, azs: list):
     logger.info("INFO : Finished aws_data_extraction.")
 
 if __name__ == "__main__":
-    start_date = datetime.today()
-    end_date   = datetime.fromisoformat('2022-01-01')
+    start_date = datetime.fromisoformat('2022-01-01')
+    end_date   =  datetime.today()
     azs = ["eu-central-1a", "eu-central-1b"]
     pull_aws_data(start_date, end_date, azs)
