@@ -1,7 +1,14 @@
+
 variable "aws_region" {
   description = "AWS Region"
   type        = string
   default     = "eu-central-1"
+}
+
+variable "redshift_password" {
+  description = "Redshift password"
+  type        = string
+  sensitive   = true
 }
 
 variable "instance_type" {
@@ -25,19 +32,19 @@ variable "my_ip_address" {
 variable "capstone_subnet_count" {
   description = "Number of subnets"
   type        = number
-  default = 1
+  default     = 1
 }
 
 variable "public_subnet_cidr_blocks" {
   description = "Availability CIDR blocks for public subnets"
   type        = string
-  default = "10.0.1.0/24"
+  default     = "10.0.1.0/24"
 }
 
 variable "capstone_subnet_cidr_blocks" {
   description = "Availability CIDR blocks for public subnets"
   type        = string
-  default = "10.0.5.0/24"
+  default     = "10.0.5.0/24"
 }
 
 variable "capstone_instance_type" {
