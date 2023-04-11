@@ -156,6 +156,17 @@ resource "aws_key_pair" "capstone_kp" {
   public_key = file("capstone_kp.pub")
 }
 
+resource "aws_secretsmanager_secret" "prefect_env" {
+  name                           = "prefect_env"
+  recovery_window_in_days        = 0
+  force_overwrite_replica_secret = true
+}
+
+resource "aws_secretsmanager_secret_version" "prefect_env_version" {
+  secret_id     = aws_secretsmanager_secret.prefect_env.id
+  secret_string = var.prefect_env
+}
+
 resource "aws_instance" "capstone_web" {
   ami = data.aws_ami.ubuntu.id
 
@@ -174,6 +185,9 @@ sudo apt update
 sudo apt install -y docker.io
 echo "Downloading the docker image"
 sudo docker pull metabase/metabase:latest
+sudo git clone https://github.com/Zesky665/DEZC_2023_Capstone.git
+cd DEZC_2023_Capstone
+sudo docker-compose up
 EOF
 
   tags = {
@@ -223,6 +237,26 @@ resource "aws_iam_role" "ec2_role" {
           ]
           Effect   = "Allow"
           Resource = "*"
+        }
+      ]
+    })
+  }
+
+  inline_policy {
+    name = "ssm-allow-read-prefect_env"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "kms:Decrypt",
+            "secretsmanager:GetSecretValue",
+            "ssm:GetParameters"
+          ]
+          Effect = "Allow"
+          Resource = [
+            aws_secretsmanager_secret.prefect_env.arn
+          ]
         }
       ]
     })
@@ -307,3 +341,71 @@ resource "aws_redshift_cluster" "zoomcamp-capstone-dwh" {
   }
 }
 // Redshift Definition
+
+// ECS Definition
+
+resource "aws_iam_role" "prefect_agent_task_role" {
+  name  = "prefect-agent-task-role-capstone"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  inline_policy {
+    name = "prefect-agent-allow-ecs-task-capstone"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "ec2:DescribeSubnets",
+            "ec2:DescribeVpcs",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:BatchGetImage",
+            "ecr:GetAuthorizationToken",
+            "ecr:GetDownloadUrlForLayer",
+            "ecs:DeregisterTaskDefinition",
+            "ecs:DescribeTasks",
+            "ecs:RegisterTaskDefinition",
+            "ecs:RunTask",
+            "iam:PassRole",
+            "logs:CreateLogGroup",
+            "logs:CreateLogStream",
+            "logs:GetLogEvents",
+            "logs:PutLogEvents"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+}
+
+resource "aws_iam_role" "prefect_agent_execution_role" {
+  name = "prefect-agent-execution-role-capstone"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      },
+    ]
+  })
+  managed_policy_arns = ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+}
+// ECS Definition
