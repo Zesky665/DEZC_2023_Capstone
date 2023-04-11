@@ -1,13 +1,21 @@
+// General Setup
 terraform {
-  required_providers {
+  cloud {
+    organization = "ZhareC"
 
-    aws = {
-      source  = "hashicorp/aws"
-      version = "4.0.0"
+    workspaces {
+      name = "example-workspace"
     }
   }
+}
 
-  required_version = "1.3.7"
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "4.33.0"
+    }
+  }
 }
 
 provider "aws" {
@@ -17,6 +25,21 @@ provider "aws" {
 data "aws_availability_zones" "available" {
   state = "available"
 }
+// General Setup
+
+// S3 Bucket Definition
+resource "aws_s3_bucket" "bucket" {
+  bucket        = "my-zoomcamp-capstone-bucket-zharec"
+  force_destroy = true
+
+  tags = {
+    Name        = "My bucket"
+    Environment = "Dev"
+  }
+}
+// S3 Bucket Definition
+
+// EC2 Definition
 
 data "aws_ami" "ubuntu" {
 
@@ -88,7 +111,7 @@ resource "aws_route_table_association" "capstone_public" {
 resource "aws_security_group" "capstone_web_sg" {
   name        = "capstone_web_sg"
   description = "Security group for capstone web servers"
-  vpc_id = aws_vpc.capstone_vpc.id
+  vpc_id      = aws_vpc.capstone_vpc.id
 
   ingress {
     description = "Allow all traffic through HTTP"
@@ -172,8 +195,6 @@ resource "aws_eip" "capstone_web_eip" {
 resource "aws_iam_role" "ec2_role" {
   name = "ec2_role"
 
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -220,3 +241,69 @@ resource "aws_iam_instance_profile" "ec2_profile" {
     create_before_destroy = true
   }
 }
+// EC2 Definition
+
+// Redshift Definition
+resource "aws_iam_role" "redshift_copy_unload" {
+  name = "redshift_copy_unload"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "redshift.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "amazon_s3_read_only_access"
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "s3:Get*",
+            "s3:List*",
+            "s3-object-lambda:Get*",
+            "s3-object-lambda:List*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        }
+      ]
+    })
+  }
+
+  tags = {
+    tag-key = "tag-value"
+  }
+}
+
+resource "aws_redshift_cluster" "zoomcamp-capstone-dwh" {
+  cluster_identifier = "zoomcamp-capstone-dwh"
+  database_name      = "capstone_db"
+  master_username    = "zhare_c"
+  master_password    = var.redshift_password
+  node_type          = "dc2.large"
+  cluster_type       = "single-node"
+  iam_roles          = [aws_iam_role.redshift_copy_unload.arn]
+
+  port                  = 5439
+  allow_version_upgrade = true
+  number_of_nodes       = 1
+  publicly_accessible   = true
+  skip_final_snapshot   = true // default is false, prevents destroy action
+
+
+  tags = {
+    Name        = "Redshift Serverless Capstone"
+    Environment = "Dev"
+  }
+}
+// Redshift Definition
