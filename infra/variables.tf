@@ -50,5 +50,5 @@ variable "capstone_subnet_cidr_blocks" {
 variable "capstone_instance_type" {
   description = "capstone instance type"
   type        = string
-  default     = "t2.micro"
+  default     = "t2.medium"
 }
