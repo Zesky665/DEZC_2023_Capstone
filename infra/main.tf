@@ -187,7 +187,9 @@ echo "Downloading the docker image"
 sudo docker pull metabase/metabase:latest
 sudo git clone https://github.com/Zesky665/DEZC_2023_Capstone.git
 cd DEZC_2023_Capstone
-sudo docker-compose up
+sudo snap install aws-cli --classic
+touch .prefect_env
+echo "#{ var.prefect_env }" >> .prefect_env
 EOF
 
   tags = {
