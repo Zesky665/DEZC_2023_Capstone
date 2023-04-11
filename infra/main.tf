@@ -4,7 +4,7 @@ terraform {
     organization = "ZhareC"
 
     workspaces {
-      name = "example-workspace"
+      name = "capstone-workspace"
     }
   }
 }
