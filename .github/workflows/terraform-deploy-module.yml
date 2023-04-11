@@ -102,6 +102,4 @@ jobs:
       run: |
        cd infra/${{ github.event.inputs.module }}
        touch output.json
-       terraform apply -var-file=secrets.tfvars \
-                           --auto-approve \
-                           -json >> output.json   
+       terraform apply -var-file=secrets.tfvars --auto-approve
