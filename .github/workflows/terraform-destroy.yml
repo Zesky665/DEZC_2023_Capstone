@@ -70,7 +70,6 @@ jobs:
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
       run: |
-       cd Terraform
        touch capstone_kp.pub
        echo '${{ secrets.CAPSTONE_PUBLIC_KEY }}' >> capstone_kp.pub
        touch secrets.tfvars
