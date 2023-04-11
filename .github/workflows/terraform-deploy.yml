@@ -94,7 +94,7 @@ jobs:
     - name: Terraform Apply
       run: | 
        cd infra
-       terraform apply terraform apply -var-file=secrets.tfvars --auto-approve
+       terraform apply -var-file=secrets.tfvars --auto-approve
        
 
 
