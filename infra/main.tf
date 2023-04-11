@@ -189,7 +189,7 @@ sudo git clone https://github.com/Zesky665/DEZC_2023_Capstone.git
 cd DEZC_2023_Capstone
 sudo snap install aws-cli --classic
 touch .prefect_env
-echo "#{ var.prefect_env }" >> .prefect_env
+echo "%{ var.prefect_env }" >> .prefect_env
 EOF
 
   tags = {
