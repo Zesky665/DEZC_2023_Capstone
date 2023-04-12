@@ -2,6 +2,7 @@ from prefect_aws import AwsCredentials, S3Bucket
 from prefect import flow, task, get_run_logger
 from datetime import datetime
 from prefect.filesystems import S3
+from dateutil.relativedelta import relativedelta
 import pandas as pd
 
 @task(name="pull spot price data and store in s3")
@@ -24,7 +25,7 @@ def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: 
         'a1.large',
         'm5a.large'
         ],
-    MaxResults=123,
+    MaxResults=1000,
     ProductDescriptions=[
         'Linux/UNIX (Amazon VPC)'
     ],
@@ -135,7 +136,10 @@ def pull_aws_data(start_date: datetime, end_date: datetime, azs: list):
     logger.info("INFO : Starting aws_data_extraction.")
     for az in azs:   
         logger.info("INFO : Starting aws_data_extraction for az: {0}.".format(az))
-        pull_spot_price_data_from_aws(start_date, end_date, az)
+        for x in range(1,4):
+            start_date = datetime.today() - relativedelta(months=x)
+            end_date = datetime.today() - relativedelta(months=x-1)
+            pull_spot_price_data_from_aws(start_date, end_date, az)
     
 
     upload_on_demand_price_data()
@@ -143,7 +147,7 @@ def pull_aws_data(start_date: datetime, end_date: datetime, azs: list):
     logger.info("INFO : Finished aws_data_extraction.")
 
 if __name__ == "__main__":
-    start_date = datetime.fromisoformat('2022-01-01')
+    start_date =  datetime.today()
     end_date   =  datetime.today()
     azs = ["eu-central-1a", "eu-central-1b"]
     pull_aws_data(start_date, end_date, azs)
