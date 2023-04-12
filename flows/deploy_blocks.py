@@ -216,7 +216,7 @@ def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, 
     deploy_redshift_credentials(host, database, port, username, password)
     deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
     deploy_dbt_profile(host, database, port, username, password)
-    deploy_ecs_task_block()
+    # deploy_ecs_task_block()
     
     logger.info("INFO: Finished block deployment.")
     

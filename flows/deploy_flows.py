@@ -5,16 +5,12 @@ from pull_aws_data import pull_aws_data
 from prefect import get_run_logger, flow, task
 from prefect.deployments import Deployment
 from prefect.filesystems import S3
-from prefect_aws.ecs import ECSTask
-
-
 
 @task(name="deploy deploy flow")
 def deploy_deploy_flow():
     logger = get_run_logger()
     logger.info("INFO: Starting deploy flow deployment.")
     s3_block = S3.load("capstone-sf3s-bucket")
-    ecs_task_block = ECSTask.load("ecs-flow-runner")
 
     deployment = Deployment.build_from_flow(
         flow=deploy_flows,
@@ -23,7 +19,6 @@ def deploy_deploy_flow():
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
-        infrastructure=ecs_task_block,
     )
     
     deployment.apply()
@@ -34,7 +29,6 @@ def deploy_aws_etl_flow():
     logger = get_run_logger()
     logger.info("INFO: Starting aws_etl flow deployment.")
     s3_block = S3.load("capstone-sf3s-bucket")
-    ecs_task_block = ECSTask.load("ecs-flow-runner")
 
     logger.info("INFO: Starting aws_pull flow deployment.")
     deployment = Deployment.build_from_flow(
@@ -44,7 +38,6 @@ def deploy_aws_etl_flow():
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
-        infrastructure=ecs_task_block,
     )
     deployment.apply()
     logger.info("INFO: Finished aws_pull flow deployment.")
@@ -57,7 +50,6 @@ def deploy_aws_etl_flow():
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
-        infrastructure=ecs_task_block,
     )
     deployment.apply()
     logger.info("INFO: Finished copy_to_redshift flow deployment.")
@@ -70,7 +62,6 @@ def deploy_aws_etl_flow():
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
-        infrastructure=ecs_task_block,
     )
     deployment.apply()
     logger.info("INFO: Finished run_dbt flow deployment.")
