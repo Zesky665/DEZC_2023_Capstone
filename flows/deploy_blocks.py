@@ -182,7 +182,7 @@ def deploy_ecs_task_block():
     aws_creds = AwsCredentials.load("aws-creds")
     
     # ECS Task values
-    ecs_task_block_name = "ecs_flow_runner"
+    ecs_task_block_name = "ecs-flow-runner"
     cpu_value = "1024"
     cpu_memory = "2048"
     cpu_image = 'zharec/prefect_agent:latest'
@@ -191,6 +191,7 @@ def deploy_ecs_task_block():
     launch_type = "FARGATE_SPOT"
     
     esc_task = ECSTask(
+    name=ecs_task_block_name,
     aws_credentials=aws_creds,
     image=cpu_image,
     cpu=cpu_value,
