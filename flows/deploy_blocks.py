@@ -179,7 +179,7 @@ def deploy_dbt_profile(host, database, port, username, password):
     
 @task(name="deploy ecs task block")
 def deploy_ecs_task_block():
-    aws_creds = AwsCredentials.load("aws-credentials")
+    aws_creds = AwsCredentials.load("aws-creds")
     
     # ECS Task values
     ecs_task_block_name = "ecs_flow_runner"
