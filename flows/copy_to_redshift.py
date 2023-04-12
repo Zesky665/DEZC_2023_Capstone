@@ -122,7 +122,7 @@ def copy_spec_info_to_redshift():
     conn.autocommit = True
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("copy TEMP_AWS_SPEC_INFO from 's3://my-zoomcamp-capstone-bucket-zharec/aws_data/spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
+    cursor.execute("copy TEMP_AWS_SPEC_INFO from 's3://my-zoomcamp-capstone-bucket-zharec/aws_data/aws_spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
     logger.info("INFO : Finished copying data.")
  
  

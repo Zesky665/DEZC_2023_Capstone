@@ -119,6 +119,18 @@ def deploy_redshift_password(redshift_password):
     secret.save("redshift-password", overwrite=True)
     logger.info("INFO: Finished redshift secret deployment.")
     
+@task(name="deploy secret value")
+def deploy_azure_sub_id(sub_id: str):
+    logger = get_run_logger()
+    logger.info("INFO: Starting redshift secret deployment.")
+    
+    secret = Secret(
+        value=sub_id,
+    )
+
+    secret.save("sub_id", overwrite=True)
+    logger.info("INFO: Finished azure sub_id secret deployment.")
+    
 @task(name="deploy redshift credentials")
 def deploy_redshift_credentials(host, database, port, username, password):
     logger = get_run_logger()
@@ -205,7 +217,7 @@ def deploy_ecs_task_block():
     esc_task.save(ecs_task_block_name, overwrite=True)
     
 @flow(name="deploy block flow")
-def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password):
+def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password, sub_id):
 
     logger = get_run_logger()
     logger.info("INFO: Starting block deployment.")
@@ -216,6 +228,7 @@ def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, 
     deploy_redshift_credentials(host, database, port, username, password)
     deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
     deploy_dbt_profile(host, database, port, username, password)
+    deploy_azure_sub_id(sub_id)
     # deploy_ecs_task_block()
     
     logger.info("INFO: Finished block deployment.")
@@ -232,6 +245,7 @@ if __name__ == "__main__":
     port = 0
     username = "" 
     password = ""
+    sub_id = ""
     
     if ("AWS_ACCESS_KEY_ID" in os.environ):
         aws_key_id = os.environ['AWS_ACCESS_KEY_ID']
@@ -262,6 +276,9 @@ if __name__ == "__main__":
  
     if ("PASSWORD" in os.environ):
         password = os.environ['PASSWORD']
+        
+    if ("AZ_SUB_ID" in os.environ):
+        sub_id = os.environ['AZ_SUB_ID']
     
     dbt_account_id = int(dbt_account_id)
-    deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password)
+    deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password, sub_id)

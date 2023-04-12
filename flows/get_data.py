@@ -1,9 +1,14 @@
+from prefect.blocks.system import Secret
 from prefect_aws import AwsCredentials, S3Bucket
 from prefect import flow, task, get_run_logger
 from datetime import datetime
 from prefect.filesystems import S3
 from dateutil.relativedelta import relativedelta
 import pandas as pd
+import requests
+import json
+from azure.identity import DefaultAzureCredential
+
 
 @task(name="pull spot price data and store in s3")
 def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: str):
@@ -80,10 +85,10 @@ def upload_on_demand_price_data():
     logger.info("INFO : Uploading parquet file to S3 bucket.")
     s3_bucket.upload_from_path("on_demand_prices.parquet", "aws_data/on_demand_prices.parquet")
     
-@task(name="pull spec info data and store in s3")
+@task(name="pull aws spec info data and store in s3")
 def pull_spec_info_data_from_aws():
     logger = get_run_logger()
-    logger.info("INFO : Starting spec info data extraction.")
+    logger.info("INFO : Starting aws spec info data extraction.")
     aws_creds = AwsCredentials.load("aws-creds")
     
     logger.info("INFO : Creating boto3 client for ec2.")
@@ -122,14 +127,56 @@ def pull_spec_info_data_from_aws():
     fdf = dff.assign(provider='AWS')
 
     logger.info("INFO : Convert data to parquet file.")
-    fdf.to_parquet('spec_info.parquet', engine='fastparquet')
+    fdf.to_parquet('aws_spec_info.parquet', engine='fastparquet')
 
     s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     
     logger.info("INFO : Upload parquet file to S3 bucket.")
-    s3_bucket.upload_from_path("spec_info.parquet", "aws_data/spec_info.parquet")
+    s3_bucket.upload_from_path("aws_spec_info.parquet", "aws_data/aws_spec_info.parquet")
     
+@task(name="get azure token")   
+def get_token():
+    credential = DefaultAzureCredential()
+    scope = "https://management.azure.com/.default"
+    token = credential.get_token(scope)
+    return token.token
 
+@task(name="pull azure spec info data and store in s3")
+def pull_spec_info_data_from_azure():
+    logger = get_run_logger()
+    logger.info("INFO : Starting azure spec info data extraction.")
+    sub_id_secret = Secret.load("sub_id")
+    sub_id = sub_id_secret.get()
+    table_data = []
+    table_data.append(['SKUName', 'Number of Cores', 'OS Disk Size in MB', 'Resource Disk Size in MB', 'Memory in MB', 'Max Data Disk Count'])
+    api_url = f'https://management.azure.com/subscriptions/{sub_id}/providers/Microsoft.Compute/locations/germanywestcentral/vmSizes?api-version=2022-11-01'
+    query = "armRegionName eq 'germanywestcentral'"
+    token = get_token()
+    logger.info("INFO : Requesting azure spec info data extraction.")
+    response = requests.get(api_url, params={'$filter': query}, headers={'Authorization': f'Bearer {token}'})
+    json_data = json.loads(response.text)
+    
+    for item in json_data['value']:
+        table_data.append([item['name'], item['numberOfCores'], item['osDiskSizeInMB'], item['resourceDiskSizeInMB'], item["memoryInMB"], item['maxDataDiskCount']])
+    
+    logger.info("INFO : Clean azure spec info data extraction.")
+    df = pd.DataFrame(table_data, columns=['SKUName', 'Number of Cores', 'OS Disk Size in MB', 'Resource Disk Size in MB', 'Memory in MB', 'Max Data Disk Count'])
+    df = df.tail(-1)
+    df = df.drop('OS Disk Size in MB', axis=1)
+    df = df.drop('Resource Disk Size in MB', axis=1)
+    df = df.drop('Max Data Disk Count', axis=1)
+    
+    df = df.assign(provider='Azure')
+    
+    logger.info("INFO : Convert data to parquet file.")
+    df.to_parquet('azure_spec_info.parquet', engine='fastparquet')
+
+    s3_bucket = S3Bucket.load("capstone-boto3-bucket")
+    
+    logger.info("INFO : Upload parquet file to S3 bucket.")
+    s3_bucket.upload_from_path("azure_spec_info.parquet", "azure_data/aws_spec_info.parquet")
+    
+    
 @flow(name="aws_to_redshift_etl") 
 def get_data(azs: list):
     logger = get_run_logger()
@@ -141,10 +188,13 @@ def get_data(azs: list):
             start_date = gen_date - relativedelta(months=x)
             end_date = gen_date - relativedelta(months=x-1)
             pull_spot_price_data_from_aws(start_date, end_date, az)
-        
+
 
     upload_on_demand_price_data()
     pull_spec_info_data_from_aws()
+    
+    pull_spec_info_data_from_azure()
+    #pull_spot_price_data_from_azure()
     logger.info("INFO : Finished aws_data_extraction.")
 
 if __name__ == "__main__":
