@@ -131,20 +131,16 @@ def pull_spec_info_data_from_aws():
     
 
 @flow(name="aws_to_redshift_etl") 
-def pull_aws_data(start_date: datetime, end_date: datetime, azs: list):
+def pull_aws_data(azs: list):
     logger = get_run_logger()
+    gen_date   = datetime.today()
     logger.info("INFO : Starting aws_data_extraction.")
     for az in azs:   
         logger.info("INFO : Starting aws_data_extraction for az: {0}.".format(az))
-        if start_date == datetime.today():
-            for x in range(1,4):
-                start_date = datetime.today() - relativedelta(months=x)
-                end_date = datetime.today() - relativedelta(months=x-1)
-                pull_spot_price_data_from_aws(start_date, end_date, az)
-        else:
-                start_date = start_date
-                end_date = end_date
-                pull_spot_price_data_from_aws(start_date, end_date, az)
+        for x in range(1, 4):
+            start_date = gen_date - relativedelta(months=x)
+            end_date = gen_date - relativedelta(months=x-1)
+            pull_spot_price_data_from_aws(start_date, end_date, az)
         
 
     upload_on_demand_price_data()
@@ -152,7 +148,6 @@ def pull_aws_data(start_date: datetime, end_date: datetime, azs: list):
     logger.info("INFO : Finished aws_data_extraction.")
 
 if __name__ == "__main__":
-    start_date =  datetime.today()
-    end_date   =  datetime.today()
+
     azs = ["eu-central-1a", "eu-central-1b"]
-    pull_aws_data(start_date, end_date, azs)
+    pull_aws_data(azs)
