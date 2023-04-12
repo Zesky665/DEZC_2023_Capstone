@@ -192,6 +192,7 @@ def deploy_ecs_task_block():
     
     esc_task = ECSTask(
     name=ecs_task_block_name,
+    cluster="arn:aws:ecs:eu-central-1:229947305276:cluster/default",
     aws_credentials=aws_creds,
     image=cpu_image,
     cpu=cpu_value,
