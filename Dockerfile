@@ -1,5 +1,7 @@
 FROM python:3.10.4-slim-bullseye
 
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
 COPY docker_setup.sh .
 
 RUN chmod +x docker_setup.sh
