@@ -137,6 +137,14 @@ resource "aws_security_group" "capstone_web_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+    ingress {
+    description = "Redshift"
+    from_port   = "5439"
+    to_port     = "5439"
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description = "Allow all outbound traffic"
     from_port   = 0
@@ -185,11 +193,13 @@ sudo apt update
 sudo apt install -y docker.io
 echo "Downloading the docker image"
 sudo docker pull metabase/metabase:latest
+cd /home/ubuntu
 sudo git clone https://github.com/Zesky665/DEZC_2023_Capstone.git
 cd DEZC_2023_Capstone
-sudo snap install aws-cli --classic
 touch .prefect_env
-echo "%{ var.prefect_env }" >> .prefect_env
+echo "${var.prefect_env}" >> .prefect_env
+sudo snap install docker
+sudo docker-compose up
 EOF
 
   tags = {
