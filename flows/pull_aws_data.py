@@ -25,7 +25,7 @@ def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: 
         'a1.large',
         'm5a.large'
         ],
-    MaxResults=1000,
+    MaxResults=10000,
     ProductDescriptions=[
         'Linux/UNIX (Amazon VPC)'
     ],
@@ -136,11 +136,16 @@ def pull_aws_data(start_date: datetime, end_date: datetime, azs: list):
     logger.info("INFO : Starting aws_data_extraction.")
     for az in azs:   
         logger.info("INFO : Starting aws_data_extraction for az: {0}.".format(az))
-        for x in range(1,4):
-            start_date = datetime.today() - relativedelta(months=x)
-            end_date = datetime.today() - relativedelta(months=x-1)
-            pull_spot_price_data_from_aws(start_date, end_date, az)
-    
+        if start_date == datetime.today():
+            for x in range(1,4):
+                start_date = datetime.today() - relativedelta(months=x)
+                end_date = datetime.today() - relativedelta(months=x-1)
+                pull_spot_price_data_from_aws(start_date, end_date, az)
+        else:
+                start_date = start_date
+                end_date = end_date
+                pull_spot_price_data_from_aws(start_date, end_date, az)
+        
 
     upload_on_demand_price_data()
     pull_spec_info_data_from_aws()
