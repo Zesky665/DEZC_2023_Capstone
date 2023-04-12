@@ -1,6 +1,5 @@
 FROM python:3.10.4-slim-bullseye
 
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
 COPY docker_setup.sh .
 
@@ -11,6 +10,8 @@ RUN ./docker_setup.sh
 COPY requirements.txt .
 
 RUN pip install -r requirements.txt
+
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 COPY prefect_setup.sh .
 
