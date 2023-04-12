@@ -131,7 +131,7 @@ def pull_spec_info_data_from_aws():
     
 
 @flow(name="aws_to_redshift_etl") 
-def pull_aws_data(azs: list):
+def get_data(azs: list):
     logger = get_run_logger()
     gen_date   = datetime.today()
     logger.info("INFO : Starting aws_data_extraction.")
@@ -150,4 +150,4 @@ def pull_aws_data(azs: list):
 if __name__ == "__main__":
 
     azs = ["eu-central-1a", "eu-central-1b"]
-    pull_aws_data(azs)
+    get_data(azs)

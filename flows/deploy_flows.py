@@ -1,7 +1,7 @@
 from datetime import datetime
 from copy_to_redshift import copy_to_redshift
 from run_dbt import run_dbt
-from pull_aws_data import pull_aws_data
+from get_data import get_data
 from prefect import get_run_logger, flow, task
 from prefect.deployments import Deployment
 from prefect.filesystems import S3
@@ -32,8 +32,8 @@ def deploy_aws_etl_flow():
 
     logger.info("INFO: Starting aws_pull flow deployment.")
     deployment = Deployment.build_from_flow(
-        flow=pull_aws_data,
-        name="pull data from aws",
+        flow=get_data,
+        name="getting data",
         parameters={"azs": ["eu-central-1a", "eu-central-1b"]},
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
