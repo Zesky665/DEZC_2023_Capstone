@@ -188,7 +188,7 @@ def deploy_ecs_task_block():
     cpu_image = 'zharec/prefect_agent:latest'
     execution_role_arn = 'arn:aws:iam::229947305276:role/prefect-agent-execution-role-capstone'
     task_role_arn = 'arn:aws:iam::229947305276:role/prefect-agent-task-role-capstone'
-    launch_type = ["FARGATE_SPOT"]
+    launch_type = "FARGATE_SPOT"
     
     esc_task = ECSTask(
     aws_credentials=aws_creds,
