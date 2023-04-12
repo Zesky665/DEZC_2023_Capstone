@@ -177,33 +177,30 @@ def deploy_dbt_profile(host, database, port, username, password):
     
     logger.info("INFO: Finished dbt profile block deployment.")
     
-# def deploy_ecs_task_block():
+@task(name="deploy ecs task block")
+def deploy_ecs_task_block():
+    aws_creds = AwsCredentials.load("aws-credentials")
     
-#     # Opening JSON file
-#     f = open('Prefect/Flows/output.js')
+    # ECS Task values
+    ecs_task_block_name = "ecs_flow_runner"
+    cpu_value = "1024"
+    cpu_memory = "2048"
+    cpu_image = 'zharec/prefect_agent:latest'
+    execution_role_arn = 'arn:aws:iam::229947305276:role/prefect-agent-execution-role-capstone'
+    task_role_arn = 'arn:aws:iam::229947305276:role/prefect-agent-task-role-capstone'
+    launch_type = ["FARGATE_SPOT"]
     
-#     # returns JSON object as
-#     # a dictionary
-#     data = json.loads(f)
-    
-#     # Loading the AWSCredentials
-#     aws_creds = AwsCredentials.load("aws-credentials")
-    
-    
-#     # ECS Task values
-#     ecs_task_block_name = "flow-runner"
-#     ecs_task_def = data["task_definition"]["value"].replace("\"", "")
-#     cpu_value = ''
-#     cpu_memory = ''
-#     cpu_image = ''
-#     vpc_id = data["vpc_id"]["value"]
-#     cluster_arn = data["ecs-cluster"]["value"]
-#     execution_role_arn = data["execution_role"]["value"]
-#     task_role_arn = data["task_role"]["value"]
-#     launch_type = "FARGATE_SPOT"
-    
-#     # Closing file
-#     f.close()
+    esc_task = ECSTask(
+    aws_credentials=aws_creds,
+    image=cpu_image,
+    cpu=cpu_value,
+    memory=cpu_memory,
+    stream_output=True,
+    execution_role_arn=execution_role_arn,
+    task_role_arn=task_role_arn,
+    launch_type=launch_type
+)
+    esc_task.save(ecs_task_block_name, overwrite=True)
     
 @flow(name="deploy block flow")
 def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password):
@@ -217,6 +214,7 @@ def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, 
     deploy_redshift_credentials(host, database, port, username, password)
     deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
     deploy_dbt_profile(host, database, port, username, password)
+    deploy_ecs_task_block()
     
     logger.info("INFO: Finished block deployment.")
     
