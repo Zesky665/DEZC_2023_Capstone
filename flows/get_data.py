@@ -145,7 +145,7 @@ def get_token():
 def pull_spec_info_data_from_azure():
     logger = get_run_logger()
     logger.info("INFO : Starting azure spec info data extraction.")
-    sub_id_secret = Secret.load("sub_id")
+    sub_id_secret = Secret.load("sub-id")
     sub_id = sub_id_secret.get()
     table_data = []
     table_data.append(['SKUName', 'Number of Cores', 'OS Disk Size in MB', 'Resource Disk Size in MB', 'Memory in MB', 'Max Data Disk Count'])
