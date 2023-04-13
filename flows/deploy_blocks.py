@@ -119,7 +119,7 @@ def deploy_azure_sub_id(sub_id):
         value=sub_id,
     )
 
-    secret.save("sub_id", overwrite=True)
+    secret.save("sub-id", overwrite=True)
     logger.info("INFO: Finished azure sub_id secret deployment.")
     
 @task(name="deploy redshift credentials")
