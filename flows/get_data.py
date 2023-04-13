@@ -134,7 +134,7 @@ def pull_spec_info_data_from_aws():
     logger.info("INFO : Upload parquet file to S3 bucket.")
     s3_bucket.upload_from_path("aws_spec_info.parquet", "aws_data/aws_spec_info.parquet")
     
-@task(name="get azure token")   
+
 def get_token():
     credential = DefaultAzureCredential()
     scope = "https://management.azure.com/.default"
