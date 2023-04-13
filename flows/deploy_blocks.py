@@ -82,15 +82,6 @@ def deploy_s3_block(aws_key_id, aws_key):
     
     logger.info(f'{s3_block_name} {bucket_name} {bucket_path}')
     
-    # S3 vanila bucket
-    sf3s = S3(
-        bucket_path=bucket_path,
-        aws_access_key_id=aws_key_id,
-        aws_secret_access_key=aws_key
-    )
-    
-    sf3s.save("capstone-sf3s-bucket", overwrite=True)
-    
     logger.info("INFO: Starting S3 vanila bucket block deployment.")
     aws_creds = AwsCredentials.load("aws-creds")
 

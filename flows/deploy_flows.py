@@ -4,13 +4,13 @@ from run_dbt import run_dbt
 from get_data import get_data
 from prefect import get_run_logger, flow, task
 from prefect.deployments import Deployment
-from prefect.filesystems import S3
+from prefect_aws import S3Bucket
 
 @task(name="deploy deploy flow")
 def deploy_deploy_flow():
     logger = get_run_logger()
     logger.info("INFO: Starting deploy flow deployment.")
-    s3_block = S3.load("capstone-sf3s-bucket")
+    s3_block = S3Bucket.load("capstone-boto3-bucket")
 
     deployment = Deployment.build_from_flow(
         flow=deploy_flows,
@@ -28,7 +28,7 @@ def deploy_deploy_flow():
 def deploy_aws_etl_flow():
     logger = get_run_logger()
     logger.info("INFO: Starting aws_etl flow deployment.")
-    s3_block = S3.load("capstone-sf3s-bucket")
+    s3_block = S3Bucket.load("capstone-boto3-bucket")
 
     logger.info("INFO: Starting aws_pull flow deployment.")
     deployment = Deployment.build_from_flow(
