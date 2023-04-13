@@ -98,7 +98,7 @@ def deploy_s3_block(aws_key_id, aws_key):
     
     logger.info("INFO: Finished S3 bucket block deployment.")
     
-@task(name="deploy secret value")
+@task(name="deploy secret redshift value")
 def deploy_redshift_password(redshift_password):
     logger = get_run_logger()
     logger.info("INFO: Starting redshift secret deployment.")
@@ -110,10 +110,10 @@ def deploy_redshift_password(redshift_password):
     secret.save("redshift-password", overwrite=True)
     logger.info("INFO: Finished redshift secret deployment.")
     
-@task(name="deploy secret value")
-def deploy_azure_sub_id(sub_id: str):
+@task(name="deploy secret azure value")
+def deploy_azure_sub_id(sub_id):
     logger = get_run_logger()
-    logger.info("INFO: Starting redshift secret deployment.")
+    logger.info("INFO: Starting azure sub_id secret deployment.")
     
     secret = Secret(
         value=sub_id,
@@ -215,10 +215,10 @@ def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, 
     create_aws_creds()
     deploy_aws_credentials_block(aws_key_id, aws_key, aws_region)
     deploy_s3_block(aws_key_id, aws_key)
-    deploy_redshift_password(password)
-    deploy_redshift_credentials(host, database, port, username, password)
-    deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
-    deploy_dbt_profile(host, database, port, username, password)
+    # deploy_redshift_password(password)
+    # deploy_redshift_credentials(host, database, port, username, password)
+    # deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
+    # deploy_dbt_profile(host, database, port, username, password)
     deploy_azure_sub_id(sub_id)
     # deploy_ecs_task_block()
     
