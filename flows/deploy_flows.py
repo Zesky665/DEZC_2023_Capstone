@@ -1,7 +1,7 @@
-from datetime import datetime
 from copy_to_redshift import copy_to_redshift
 from run_dbt import run_dbt
-from get_data import get_data
+from get_aws_data import get_aws_data
+from get_azure_data import get_azure_data
 from prefect import get_run_logger, flow, task
 from prefect.deployments import Deployment
 from prefect_aws import S3Bucket
@@ -32,15 +32,27 @@ def deploy_aws_etl_flow():
 
     logger.info("INFO: Starting aws_pull flow deployment.")
     deployment = Deployment.build_from_flow(
-        flow=get_data,
-        name="getting data",
-        parameters={"aws_azs": ["eu-central-1a", "eu-central-1b"], "az_azs": "germanywestcentral"},
+        flow=get_aws_data,
+        name="getting aws data",
+        parameters={"aws_azs": ["eu-central-1a", "eu-central-1b"]},
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
     )
     deployment.apply()
     logger.info("INFO: Finished aws_pull flow deployment.")
+    
+    logger.info("INFO: Starting azure_pull flow deployment.")
+    deployment = Deployment.build_from_flow(
+        flow=get_azure_data,
+        name="getting azure data",
+        parameters={ "az_azs": "germanywestcentral"},
+        infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
+        work_queue_name="default",
+        storage=s3_block,
+    )
+    deployment.apply()
+    logger.info("INFO: Finished azure_pull flow deployment.")
     
     logger.info("INFO: Starting copy_to_redshift flow deployment.")
     deployment = Deployment.build_from_flow(
