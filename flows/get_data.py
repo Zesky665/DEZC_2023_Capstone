@@ -166,7 +166,8 @@ def pull_spec_info_data_from_azure():
     df = df.drop('Resource Disk Size in MB', axis=1)
     df = df.drop('Max Data Disk Count', axis=1)
     df.rename(columns={'SKUName': 'instance_type', 'Number of Cores': 'vpc', "Memory in MB": "memory"}, inplace=True)
-    
+    df['vpc'] = pd.to_numeric(df['vpc'], downcast="float")
+    df['memory'] = pd.to_numeric(df['memory'], downcast="float")
     df = df.assign(provider='Azure')
     
     logger.info("INFO : Convert data to parquet file.")
