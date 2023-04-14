@@ -52,6 +52,7 @@ def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: 
 
     file_name = f'spot_prices_{az}_{start_date_str}_{end_date_str}.parquet'
     
+    fdf = df.assign(Timestamp="")
     fdf = df.assign(provider='AWS')
     
     logger.info("INFO : Converting data into a parquet file.")
@@ -94,11 +95,13 @@ def pull_spot_price_data_from_azure(az):
     df.rename(columns={"SKU": "InstanceType", "Product Name": "ProductDescription", "Region": "AvailabilityZone", "Retail Price": "SpotPrice"}, inplace=True)
     df = df[['AvailabilityZone','InstanceType','ProductDescription','SpotPrice']]
     df = df.assign(provider='Azure')
+    date = datetime.today()
+    timestamp = date.strftime("%Y-%m-%d %H:%M:%S")
+    df = df.assign(Timestamp=timestamp)
     
     logger.info("INFO : Converting data into a parquet file.")
-    access_date = datetime.today()
-    date_str = access_date.strftime("%Y-%m-%d")
-    file_name = f'spot_prices_{az}_{date_str}.parquet'
+
+    file_name = f'spot_prices_{az}_{timestamp}.parquet'
     df.to_parquet(file_name, engine='fastparquet')
 
     s3_bucket = S3Bucket.load("capstone-boto3-bucket")
