@@ -224,11 +224,11 @@ def pull_spec_info_data_from_azure():
     
     
 @flow(name="aws_to_redshift_etl") 
-def get_data(azs: list):
+def get_data(aws_azs: list, az_azs: str):
     logger = get_run_logger()
     gen_date   = datetime.today()
     logger.info("INFO : Starting aws_data_extraction.")
-    for az in azs:   
+    for az in aws_azs:   
         logger.info("INFO : Starting aws_data_extraction for az: {0}.".format(az))
         for x in range(1, 4):
             start_date = gen_date - relativedelta(months=x)
@@ -240,7 +240,7 @@ def get_data(azs: list):
     pull_spec_info_data_from_aws()
     
     pull_spec_info_data_from_azure()
-    #pull_spot_price_data_from_azure()
+    pull_spot_price_data_from_azure(az_azs)
     logger.info("INFO : Finished aws_data_extraction.")
 
 if __name__ == "__main__":
