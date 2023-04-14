@@ -174,7 +174,7 @@ def pull_spec_info_data_from_azure():
     s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     
     logger.info("INFO : Upload parquet file to S3 bucket.")
-    s3_bucket.upload_from_path("azure_spec_info.parquet", "azure_data/aws_spec_info.parquet")
+    s3_bucket.upload_from_path("azure_spec_info.parquet", "azure_data/azure_spec_info.parquet")
     
     
 @flow(name="aws_to_redshift_etl") 

@@ -1,6 +1,5 @@
 FROM python:3.10.4-slim-bullseye
 
-
 COPY docker_setup.sh .
 
 RUN chmod +x docker_setup.sh
