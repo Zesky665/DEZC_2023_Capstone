@@ -34,7 +34,7 @@ def deploy_aws_etl_flow():
     deployment = Deployment.build_from_flow(
         flow=get_data,
         name="getting data",
-        parameters={"azs": ["eu-central-1a", "eu-central-1b"]},
+        parameters={"aws_azs": ["eu-central-1a", "eu-central-1b"], "az_azs": "germanywestcentral"},
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
