@@ -10,10 +10,10 @@ import json
 from azure.identity import DefaultAzureCredential
 
 
-@task(name="pull spot price data and store in s3")
+@task(name="pull aws spot price data and store in s3")
 def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: str):
     logger = get_run_logger()
-    logger.info("INFO : Starting spot price extraction.")
+    logger.info("INFO : Starting aws spot price extraction.")
     aws_creds = AwsCredentials.load("aws-creds")
     
     logger.info("INFO : Creating boto3 client for ec2.")
@@ -60,6 +60,50 @@ def pull_spot_price_data_from_aws(start_date: datetime, end_date: datetime, az: 
     s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     logger.info("INFO : Uploading parquet file to S3 bucket.")
     s3_bucket.upload_from_path(file_name, f'aws_data/{file_name}')
+    
+@task(name="pull azure spot price data and store in s3")
+def pull_spot_price_data_from_azure(az):
+    logger = get_run_logger()
+    logger.info("INFO : Starting azure spot price extraction.")
+    table_data = []
+    table_data.append(['SKU', 'Retail Price', 'Unit of Measure', 'Region', 'Meter', 'Product Name'])
+    
+    api_url = "https://prices.azure.com/api/retail/prices?api-version=2021-10-01-preview"
+    query = "armRegionName eq '{0}' and armSkuName eq 'Standard_A1_v2' and priceType eq 'Consumption' and contains(meterName, 'Spot')".format(az)
+    response = requests.get(api_url, params={'$filter': query})
+    json_data = json.loads(response.text)
+    
+    for item in json_data['Items']:
+        meter = item['meterName']
+        table_data.append([item['armSkuName'], item['retailPrice'], item['unitOfMeasure'], item['armRegionName'], meter, item['productName']])
+    
+    nextPage = json_data['NextPageLink']
+    
+    while(nextPage):
+        response = requests.get(nextPage)
+        json_data = json.loads(response.text)
+        nextPage = json_data['NextPageLink']
+        for item in json_data['Items']:
+            meter = item['meterName']
+            table_data.append([item['armSkuName'], item['retailPrice'], item['unitOfMeasure'], item['armRegionName'], meter, item['productName']])
+    df = pd.DataFrame(table_data, columns=["SKU", "Retail Price", "Unit of Measure", "Region", "Meter", "Product Name"])
+
+    df = df.tail(-1)
+    df = df.drop('Unit of Measure', axis=1)
+    df = df.drop('Meter', axis=1)
+    df.rename(columns={"SKU": "InstanceType", "Product Name": "ProductDescription", "Region": "AvailabilityZone", "Retail Price": "SpotPrice"}, inplace=True)
+    df = df[['AvailabilityZone','InstanceType','ProductDescription','SpotPrice']]
+    df = df.assign(provider='Azure')
+    
+    logger.info("INFO : Converting data into a parquet file.")
+    access_date = datetime.today()
+    date_str = access_date.strftime("%Y-%m-%d")
+    file_name = f'spot_prices_{az}_{date_str}.parquet'
+    df.to_parquet(file_name, engine='fastparquet')
+
+    s3_bucket = S3Bucket.load("capstone-boto3-bucket")
+    logger.info("INFO : Uploading parquet file to S3 bucket.")
+    s3_bucket.upload_from_path(file_name, f'azure_data/{file_name}')
     
 @task(name="read on_demand price data and store in s3")
 def upload_on_demand_price_data():
@@ -201,5 +245,7 @@ def get_data(azs: list):
 
 if __name__ == "__main__":
 
-    azs = ["eu-central-1a", "eu-central-1b"]
-    get_data(azs)
+    aws_azs = ["eu-central-1a", "eu-central-1b"]
+    az_azs = "germanywestcentral"
+    
+    get_data(aws_azs, az_azs)
