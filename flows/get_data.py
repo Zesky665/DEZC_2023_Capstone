@@ -98,6 +98,8 @@ def pull_spot_price_data_from_azure(az):
     date = datetime.today()
     timestamp = date.strftime("%Y-%m-%d %H:%M:%S")
     df = df.assign(Timestamp=timestamp)
+    df['Timestamp'] = df['Timestamp'].astype(str)
+    df['SpotPrice'] = pd.to_numeric(df['SpotPrice'], downcast="float")
     
     logger.info("INFO : Converting data into a parquet file.")
 
