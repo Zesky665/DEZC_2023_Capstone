@@ -165,6 +165,7 @@ def pull_spec_info_data_from_azure():
     df = df.drop('OS Disk Size in MB', axis=1)
     df = df.drop('Resource Disk Size in MB', axis=1)
     df = df.drop('Max Data Disk Count', axis=1)
+    df.rename(columns={'SKUName': 'instance_type', 'Number of Cores': 'vpc', "Memory in MB": "memory"}, inplace=True)
     
     df = df.assign(provider='Azure')
     

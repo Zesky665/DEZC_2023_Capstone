@@ -32,10 +32,11 @@ def redshift_setup():
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL, provider varchar(100) NOT NULL);")
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPEC_INFO( instance_type varchar(100) NOT NULL, free_tier BOOL NOT NULL, architecture varchar(100), cpu_speed REAL NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL, provider varchar(100) NOT NULL);")
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL, provider varchar(100) NOT NULL);")
+    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AZURE_SPEC_INFO( instance_type varchar(100) NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL, provider varchar(100) NOT NULL)")
     logger.info(f'INFO: Finished redshift setup.')
     
-@task(name="Copy spot price data file to redshift")
-def copy_spot_prices_to_redshift():
+@task(name="Copy aws spot price data file to redshift")
+def copy_aws_spot_prices_to_redshift():
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -79,7 +80,7 @@ def copy_spot_prices_to_redshift():
     logger.info("INFO : Finished copying data.")
     
 @task(name="copy on-demand price data to redshift")
-def copy_on_demand_to_redshift():
+def copy_aws_on_demand_to_redshift():
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -102,8 +103,8 @@ def copy_on_demand_to_redshift():
     logger.info("INFO : Finished copying data.")
  
     
-@task(name="copy spec data file to redshift")
-def copy_spec_info_to_redshift():
+@task(name="copy aws spec data file to redshift")
+def copy_aws_spec_info_to_redshift():
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -125,9 +126,31 @@ def copy_spec_info_to_redshift():
     cursor.execute("copy TEMP_AWS_SPEC_INFO from 's3://my-zoomcamp-capstone-bucket-zharec/aws_data/aws_spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
     logger.info("INFO : Finished copying data.")
  
+@task(name="copy azure spec data file to redshift")
+def copy_azure_spec_info_to_redshift():
+    logger = get_run_logger()
+    logger.info("INFO : Begin copying data to redshift.")
+    database_block = DatabaseCredentials.load("redshift-credentials")
+    redshift_secret = Secret.load("redshift-password")
+    
+    logger.info("INFO : Connecting to Redshift.")
+    conn = redshift_connector.connect(
+        host=database_block.host,
+        database=database_block.database,
+        port=int(database_block.port),
+        user=database_block.username,
+        password=redshift_secret.get()
+    )
+    
+    cursor = conn.cursor()
+    conn.autocommit = True
+    logger.info("INFO : Connected to Redshift.")
+    logger.info("INFO : Copy to TEMP_Table.")
+    cursor.execute("copy TEMP_AZURE_SPEC_INFO from 's3://my-zoomcamp-capstone-bucket-zharec/azure_data/azure_spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
+    logger.info("INFO : Finished copying data.")
  
-@task(name="clean spot price data.")
-def clean_spot_price_data():
+@task(name="clean aws spot price data.")
+def clean_aws_spot_price_data():
     logger = get_run_logger()
     logger.info("INFO : Begin cleaning spot data in redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -154,8 +177,8 @@ def clean_spot_price_data():
     conn.commit()
     logger.info("INFO : Finished copying data.")
     
-@task(name="clean on-demand data")
-def clean_on_demand_data():
+@task(name="clean aws on-demand data")
+def clean_aws_on_demand_data():
     logger = get_run_logger()
     logger.info("INFO : Begin cleaning on-demand data in redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -181,8 +204,8 @@ def clean_on_demand_data():
     conn.commit()
     logger.info("INFO : Finished copying data.")
     
-@task(name="clean spec info data")
-def clean_spec_info_data():
+@task(name="clean aws spec info data")
+def clean_aws_spec_info_data():
     logger = get_run_logger()
     logger.info("INFO : Begin cleaning spec-info data in redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -208,19 +231,48 @@ def clean_spec_info_data():
     conn.commit()
     logger.info("INFO : Finished copying data.")
  
+        
+@task(name="clean azure spec info data")
+def clean_azure_spec_info_data():
+    logger = get_run_logger()
+    logger.info("INFO : Begin cleaning azure spec-info data in redshift.")
+    database_block = DatabaseCredentials.load("redshift-credentials")
+    redshift_secret = Secret.load("redshift-password")
     
+    logger.info("INFO : Connecting to Redshift.")
+    conn = redshift_connector.connect(
+        host=database_block.host,
+        database=database_block.database,
+        port=int(database_block.port),
+        user=database_block.username,
+        password=redshift_secret.get()
+    )
+    
+    cursor = conn.cursor()
+    conn.autocommit = False
+    logger.info("INFO : Connected to Redshift.")
+    logger.info("INFO : Copy to TEMP_Table.")
+    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AZURE_SPEC_INFO( instance_type varchar(100) NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL, provider varchar(100) NOT NULL);")
+    cursor.execute("INSERT INTO RAW_AZURE_SPEC_INFO (SELECT * FROM TEMP_AZURE_SPEC_INFO as A WHERE instance_type NOT IN (SELECT instance_type FROM RAW_AZURE_SPEC_INFO));")
+    conn.commit()
+    cursor.execute("DROP TABLE TEMP_AZURE_SPEC_INFO")
+    conn.commit()
+    logger.info("INFO : Finished copying data.")
+ 
     
 @flow(name="aws_to_redshift_etl") 
 def copy_to_redshift():
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     redshift_setup()
-    copy_spot_prices_to_redshift()
-    copy_on_demand_to_redshift()
-    copy_spec_info_to_redshift()
-    clean_spot_price_data()
-    clean_on_demand_data()
-    clean_spec_info_data()
+    copy_aws_spot_prices_to_redshift()
+    copy_aws_on_demand_to_redshift()
+    copy_aws_spec_info_to_redshift()
+    copy_azure_spec_info_to_redshift()
+    clean_aws_spot_price_data()
+    clean_aws_on_demand_data()
+    clean_aws_spec_info_data()
+    clean_azure_spec_info_data()
     logger.info("INFO : Finished copying data to redshift.")
  
 if __name__ == "__main__":
