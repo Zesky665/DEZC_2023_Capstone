@@ -38,6 +38,7 @@ If you want to run it with GitHub Actions
 
 ## Tech Diagram
 
+![Tech diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/final/misc/tech_diagram.png)
 
 ## Dashboard
  ** insert pictures of the diashboars **
