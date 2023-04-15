@@ -11,5 +11,6 @@ Add the following secrets to your GitHub repo.
 - TF_API_TOKEN - your terraform api token.
 - MY_IP_ADDRESS - your personal IP address. 
 - REDSHIFT_PASSWORD - your redshift password.
+- CAPSTONE_PUBLIC_KEY - Copy and past the public key you generated in the local setup. 
 - ENV_FILE = The contents of your [local secret.tfvars file](https://github.com/Zesky665/DEZC_2023_Capstone/blob/final/misc/Local_Setup.md).
 
