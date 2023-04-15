@@ -31,8 +31,11 @@ If you want to run it with GitHub Actions
 ** Insert picture here **
 
 ## Data Sources: 
+
  - [AWS historical pricing](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-spot-price-history.html).
+
  - Azure price list [API](https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices).
+ 
  - GCP Pricing data. 
 
 ## Tech Diagram
