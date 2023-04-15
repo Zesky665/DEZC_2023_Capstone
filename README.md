@@ -20,20 +20,19 @@
 
 ## Setup instructions
 
-Run it locally: 
+If you want to run it locally. 
+[Local setup](https://github.com/Zesky665/DEZC_2023_Capstone/blob/final/misc/Local_Setup.md)
 
-
-
-Run it in cloud:
-** Link to instructions **
+If you want to run it with GitHub Actions
+[GitHub Setup](https://github.com/Zesky665/DEZC_2023_Capstone/blob/final/misc/GitHub_Setup.md)
 
 ## DWH Database Schema
 
 ** Insert picture here **
 
 ## Data Sources: 
- - AWS historical pricing.
- - Azure price list API.
+ - [AWS historical pricing](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-spot-price-history.html).
+ - Azure price list [API](https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices).
  - GCP Pricing data. 
 
 ## Tech Diagram
