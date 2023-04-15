@@ -135,13 +135,12 @@ def get_aws_data(aws_azs: list):
     logger = get_run_logger()
     gen_date   = datetime.today()
     logger.info("INFO : Starting aws_data_extraction.")
+    
     for az in aws_azs:   
         logger.info("INFO : Starting aws_data_extraction for az: {0}.".format(az))
-        for x in range(1, 4):
-            start_date = gen_date - relativedelta(months=x)
-            end_date = gen_date - relativedelta(months=x-1)
-            pull_spot_price_data_from_aws(start_date, end_date, az)
-
+        start_date = gen_date - relativedelta(months=1)
+        end_date = gen_date
+        pull_spot_price_data_from_aws(start_date, end_date, az)
 
     upload_on_demand_price_data()
     pull_spec_info_data_from_aws()

@@ -5,6 +5,7 @@ from get_azure_data import get_azure_data
 from prefect import get_run_logger, flow, task
 from prefect.deployments import Deployment
 from prefect_aws import S3Bucket
+from prefect.orion.schemas.schedules import CronSchedule
 
 @task(name="deploy deploy flow")
 def deploy_deploy_flow():
@@ -35,6 +36,7 @@ def deploy_aws_etl_flow():
         flow=get_aws_data,
         name="getting aws data",
         parameters={"aws_azs": ["eu-central-1a", "eu-central-1b"]},
+        schedule=(CronSchedule(cron="0 0 1 * *", timezone="UTC")),
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
@@ -47,6 +49,7 @@ def deploy_aws_etl_flow():
         flow=get_azure_data,
         name="getting azure data",
         parameters={ "az_azs": "germanywestcentral"},
+        schedule=(CronSchedule(cron="00 12 * * *", timezone="UTC")),
         infra_overrides={"env": {"PREFECT_LOGGING_LEVEL": "DEBUG"}},
         work_queue_name="default",
         storage=s3_block,
