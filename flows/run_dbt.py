@@ -57,7 +57,13 @@ def create_staging_tables():
                   "dbt build --select staging_aws_spec_info --project-dir /opt/flows", 
                   "dbt run --select staging_aws_spec_info --project-dir //opt/flows",
                   "dbt build --select staging_aws_spot_prices --project-dir /opt/flows", 
-                  "dbt run --select staging_aws_spot_prices --project-dir /opt/flows"]
+                  "dbt run --select staging_aws_spot_prices --project-dir /opt/flows",
+                  "dbt build --select staging_aws_on_demand_prices --project-dir /opt/flows", 
+                  "dbt run --select staging_aws_on_demand_prices --project-dir /opt/flows",
+                  "dbt build --select staging_azure_spec_info --project-dir /opt/flows", 
+                  "dbt run --select staging_azure_spec_info --project-dir //opt/flows",
+                  "dbt build --select staging_azure_spot_prices --project-dir /opt/flows", 
+                  "dbt run --select staging_azure_spot_prices --project-dir /opt/flows"]
     )
     dbt_init.run()
     logger.info("INFO : End creating staging tables.")
@@ -71,7 +77,9 @@ def create_prod_tables():
         overwrite_profiles=False,
         commands=["dbt deps", "dbt debug", "dbt list", 
                   "dbt build --select prod_aws_spot_catalog --project-dir /opt/flows", 
-                  "dbt run --select prod_aws_spot_catalog --project-dir /opt/flows"],
+                  "dbt run --select prod_aws_spot_catalog --project-dir /opt/flows",
+                  "dbt build --select prod_azure_spot_catalog --project-dir /opt/flows", 
+                  "dbt run --select prod_azure_spot_catalog --project-dir /opt/flows"],
     )
     dbt_init.run()
     logger.info("INFO : End creating production tables.")

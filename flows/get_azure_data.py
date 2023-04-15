@@ -41,10 +41,10 @@ def pull_spot_price_data_from_azure(az):
     df = df.drop('Meter', axis=1)
     df.rename(columns={"SKU": "InstanceType", "Product Name": "ProductDescription", "Region": "AvailabilityZone", "Retail Price": "SpotPrice"}, inplace=True)
     df = df[['AvailabilityZone','InstanceType','ProductDescription','SpotPrice']]
-    df = df.assign(provider='Azure')
     date = datetime.today()
     timestamp = date.strftime("%Y-%m-%d %H:%M:%S")
     df = df.assign(Timestamp=timestamp)
+    df = df.assign(provider='Azure')
     df['Timestamp'] = df['Timestamp'].astype(str)
     df['SpotPrice'] = pd.to_numeric(df['SpotPrice'], downcast="float")
     
