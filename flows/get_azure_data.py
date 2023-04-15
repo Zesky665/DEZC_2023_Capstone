@@ -10,14 +10,14 @@ import json
 from azure.identity import DefaultAzureCredential
 
 @task(name="pull azure spot price data and store in s3")
-def pull_spot_price_data_from_azure(az):
+def pull_spot_price_data_from_azure(az, instance):
     logger = get_run_logger()
     logger.info("INFO : Starting azure spot price extraction.")
     table_data = []
     table_data.append(['SKU', 'Retail Price', 'Unit of Measure', 'Region', 'Meter', 'Product Name'])
     
     api_url = "https://prices.azure.com/api/retail/prices?api-version=2021-10-01-preview"
-    query = "armRegionName eq '{0}' and armSkuName eq 'Standard_A1_v2' and priceType eq 'Consumption' and contains(meterName, 'Spot')".format(az)
+    query = "armRegionName eq '{0}' and armSkuName eq '{1}' and priceType eq 'Consumption' and contains(meterName, 'Spot')".format(az, instance)
     response = requests.get(api_url, params={'$filter': query})
     json_data = json.loads(response.text)
     
@@ -50,7 +50,7 @@ def pull_spot_price_data_from_azure(az):
     
     logger.info("INFO : Converting data into a parquet file.")
 
-    file_name = f'spot_prices_{az}_{timestamp}.parquet'
+    file_name = f'spot_prices_{instance}_{az}_{timestamp}.parquet'
     df.to_parquet(file_name, engine='fastparquet')
 
     s3_bucket = S3Bucket.load("capstone-boto3-bucket")
@@ -107,7 +107,9 @@ def get_azure_data( az_azs: str):
     logger.info("INFO : Starting azure_data_extraction.")
 
     pull_spec_info_data_from_azure()
-    pull_spot_price_data_from_azure(az_azs)
+    instance_types = ["Standard_A1_v2", "Standard_A2_v2", "Standard_D2_v3"]
+    for instance in instance_types:
+        pull_spot_price_data_from_azure(az_azs, instance)
     logger.info("INFO : Finished aws_data_extraction.")
 
 if __name__ == "__main__":
