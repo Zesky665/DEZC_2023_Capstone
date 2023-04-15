@@ -1,4 +1,4 @@
-# Collecting data on the cost of spot instances across the three major Cloud Providers (AWS, Azure, GCP)
+# Collecting data on the cost of spot instances across the major Cloud Providers (AWS, Azure)
 
 
 ## Objectives 
@@ -28,15 +28,13 @@ If you want to run it with GitHub Actions
 
 ## DWH Database Schema
 
-** Insert picture here **
+![Data diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/final/misc/data_diagram.png)
 
 ## Data Sources: 
 
  - [AWS historical pricing](https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-spot-price-history.html).
 
  - Azure price list [API](https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices).
- 
- - GCP Pricing data. 
 
 ## Tech Diagram
 
@@ -44,6 +42,7 @@ If you want to run it with GitHub Actions
 ## Dashboard
  ** insert pictures of the diashboars **
 ## Insights 
-** insert insights in bullet points **
+- AWS spot instances are often as costly as on-demand. Even when available the savings are much less. 
+- Azure spot instances (Preemptible) seem to be much more available, since the prices are much close to the -90% that is advertised. 
 ## To-Do
 ** Work on this last**
