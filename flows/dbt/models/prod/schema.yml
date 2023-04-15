@@ -9,3 +9,12 @@ models:
             tests:
                 - unique
                 - not_null
+    
+    - name: prod_azure_spot_catalog
+      description: "{{ doc('azure_catalog') }}"
+      columns:
+          - name: time_stamp
+            description: "The primary key for this table"
+            tests:
+                - unique
+                - not_null

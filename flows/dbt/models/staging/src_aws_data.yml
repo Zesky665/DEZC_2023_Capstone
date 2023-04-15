@@ -8,3 +8,5 @@ sources:
       - name: raw_aws_spec_info
       - name: raw_aws_spot_prices
       - name: raw_aws_on_demand_prices
+      - name: raw_azure_spec_info
+      - name: raw_azure_spot_prices
