@@ -29,3 +29,23 @@ models:
             tests:
                 - unique
                 - not_null
+    
+    - name: staging_azure_spot_prices
+      description: "Staging Azure Spot Prices model"
+      tests:
+      - unique:
+          column_name: "(time_stamp || '-' || prod_desc || '-' || az)"
+      columns:
+          - name: time_stamp
+            description: "The primary key for this table"
+            tests:
+                - not_null
+
+    - name: staging_azure_spec_info
+      description: "Stagind Azure Types Spec model"
+      columns:
+          - name: instance_type
+            description: "The primary key for this table"
+            tests:
+                - unique
+                - not_null
