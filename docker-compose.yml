@@ -4,9 +4,9 @@ services:
     image: "zharec/prefect_agent:latest"
     env_file:
       - .prefect_env
-  # metabase:
-  #   image: "metabase/metabase:latest"
-  #   ports:
-  #     - 3000:3000
+  metabase:
+    image: "metabase/metabase:latest"
+    ports:
+      - 3000:3000
 
 
