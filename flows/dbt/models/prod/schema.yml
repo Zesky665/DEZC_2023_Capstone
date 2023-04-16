@@ -23,7 +23,7 @@ models:
             tests:
                 - not_null
 
-    - name: spot_price_catalog
+    - name: prod_spot_price_catalog
       description: "{{ doc('spot_catalog') }}"
       tests:
       - unique:
