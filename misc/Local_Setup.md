@@ -93,6 +93,7 @@ To it add the following.
 ```
 my_ip_address     = "123.45.67.89" // use 'curl https://checkip.amazonaws.com' to find it, use your local pc's ip address
 redshift_password = ""
+redshift_user     = ""
 prefect_env = <<EOT
 PREFECT_KEY = 
 PREFECT_WORKSPACE = 
