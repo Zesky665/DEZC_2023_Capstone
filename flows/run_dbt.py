@@ -79,7 +79,9 @@ def create_prod_tables():
                   "dbt build --select prod_aws_spot_catalog --project-dir /opt/flows", 
                   "dbt run --select prod_aws_spot_catalog --project-dir /opt/flows",
                   "dbt build --select prod_azure_spot_catalog --project-dir /opt/flows", 
-                  "dbt run --select prod_azure_spot_catalog --project-dir /opt/flows"],
+                  "dbt run --select prod_azure_spot_catalog --project-dir /opt/flows",
+                  "dbt build --select prod_spot_catalog --project-dir /opt/flows", 
+                  "dbt run --select prod_spot_catalog --project-dir /opt/flows"],
     )
     dbt_init.run()
     logger.info("INFO : End creating production tables.")
