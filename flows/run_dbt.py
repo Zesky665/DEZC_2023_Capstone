@@ -86,11 +86,26 @@ def create_prod_tables():
     dbt_init.run()
     logger.info("INFO : End creating production tables.")
     
+@task(name="run dbt datamart script")
+def create_datamart_tables():
+    logger = get_run_logger()
+    logger.info("INFO : Begin creating production tables.")
+
+    dbt_init = DbtCoreOperation(
+        overwrite_profiles=False,
+        commands=["dbt deps", "dbt debug", "dbt list", 
+                  "dbt build --select prod_spot_price_catalog --project-dir /opt/flows", 
+                  "dbt run --select prod_spot_price_catalog --project-dir /opt/flows"],
+    )
+    dbt_init.run()
+    logger.info("INFO : End creating production tables.")
+    
 @flow(name="aws_to_redshift_etl") 
 def run_dbt():
     create_dbt_profile()
     create_staging_tables()
     create_prod_tables()
+    create_datamart_tables()
  
 if __name__ == "__main__":
 
