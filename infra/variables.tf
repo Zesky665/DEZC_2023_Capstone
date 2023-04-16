@@ -5,6 +5,12 @@ variable "aws_region" {
   default     = "eu-central-1"
 }
 
+variable "redshift_usern" {
+  description = "Redshift user"
+  type        = string
+  sensitive   = true
+}
+
 variable "redshift_password" {
   description = "Redshift password"
   type        = string

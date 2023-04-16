@@ -1,4 +1,4 @@
-{% docs azure_catalog %}
+{% docs spot_catalog %}
 	
 What the values mean:
 
@@ -11,5 +11,6 @@ What the values mean:
 | time_stamp     | The time when the information was recorded       |
 | az             | Availability Zone                                |
 | prod_desc      | Product Description                              |
+ 
 
 {% enddocs %}
