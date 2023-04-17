@@ -2,5 +2,7 @@
     {"InstanceType": "a1.medium",
      "OnDemandPrice": "$0.0291"},
     {"InstanceType": "a1.large",
-     "OnDemandPrice": "$0.0582"}
+     "OnDemandPrice": "$0.0582"},
+    {"InstanceType": "m5a.large",
+     "OnDemandPrice": "$0.104"}
    ]
