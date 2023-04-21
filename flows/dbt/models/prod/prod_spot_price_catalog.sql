@@ -7,7 +7,13 @@
     Try changing "table" to "view" below
 */
 
-{{ config(materialized='table') }}
+{{ 
+    config(
+        materialized='incremental',
+        unique_key=['instance_type', 'az', 'time_stamp', 'prod_desc']
+        ) 
+    
+}}
 
 with aws_spot_catalog as (
     SELECT  

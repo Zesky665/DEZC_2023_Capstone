@@ -1,0 +1,4 @@
+SELECT "capstone_db"."prod_spot_price_catalog"."instance_type" AS "instance_type", "capstone_db"."prod_spot_price_catalog"."spot_price" AS "spot_price", "capstone_db"."prod_spot_price_catalog"."provider" AS "provider", "capstone_db"."prod_spot_price_catalog"."prod_desc" AS "prod_desc", "capstone_db"."prod_spot_price_catalog"."vpc" AS "vpc", "capstone_db"."prod_spot_price_catalog"."memory" AS "memory", "capstone_db"."prod_spot_price_catalog"."az" AS "az", "capstone_db"."prod_spot_price_catalog"."time_stamp" AS "time_stamp"
+FROM "capstone_db"."prod_spot_price_catalog"
+WHERE {{instance_type}}
+LIMIT 1048575
