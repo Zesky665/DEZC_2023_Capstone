@@ -18,7 +18,7 @@ This project aims to make these types of questions answerable at a glance.
 
 - Cloud: AWS (EC2, S3, Redshift)
 - Containerization: Docker with Docker-Compose
-- Infrastructure: Terraform
+- Infrastructure: Terraform, Github Actions
 - DWH: Redshift
 - Orchestration: Prefect
 - Data Transformation: Pandas
@@ -32,6 +32,19 @@ If you want to run it locally.
 If you want to run it with GitHub Actions
 [GitHub Setup](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/GitHub_Setup.md)
 
+ ## Data Ingestion
+
+ - Data extraction flow, scheduled to run at 10AM everyday. 
+ - Data loading into redshift, scheduled to run at 11AM everyday. 
+ - Data transformation inside redshift via dbt, runs at 12AM everyday. 
+
+## Transformation
+
+I used dbt to load the data into staging tables which were than merged into production tables that serve as datamarts. 
+
+The table that is used for the metabase has the following lineage. 
+
+![dbt lineage](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/dbt_lineage.png)
 ## DWH Database Schema
 
 ![Data diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/data_diagram.png)
