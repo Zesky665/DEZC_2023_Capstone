@@ -1,0 +1,8 @@
+[
+    {"InstanceType": "Standard_A1_v2",
+     "OnDemandPrice": "$0.0410"},
+    {"InstanceType": "Standard_A2_v2",
+     "OnDemandPrice": "$0.0870"},
+    {"InstanceType": "Standard_D2_v3",
+     "OnDemandPrice": "$0.1150"}
+   ]

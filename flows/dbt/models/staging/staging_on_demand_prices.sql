@@ -17,7 +17,7 @@
 
 WITH source_data AS (
 
-    SELECT * FROM {{ source('capstone_db', 'raw_aws_on_demand_prices') }}
+    SELECT * FROM {{ source('capstone_db', 'raw_on_demand_prices') }}
 
 )
 

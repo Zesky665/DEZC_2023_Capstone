@@ -56,7 +56,32 @@ def pull_spot_price_data_from_azure(az, instance):
     s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     logger.info("INFO : Uploading parquet file to S3 bucket.")
     s3_bucket.upload_from_path(file_name, f'azure_data/{file_name}')
+
+@task(name="read on_demand price data and store in s3")
+def upload_on_demand_price_data():
+    logger = get_run_logger()
+    logger.info("INFO : Starting on-demand price extraction.")
+
+    logger.info("INFO : Reading on-demand data.")
+    data = pd.read_json("/opt/flows/misc/on_demand_vm.json")
+
+    logger.info("INFO : Converting on-demand data into dataframe.")
+    df = pd.DataFrame(data)
+
+    logger.info("INFO : Cleaning on-demand data.")
+    df['OnDemandPrice'] = df['OnDemandPrice'].str.strip('$€£¥₣₹')
+    df['OnDemandPrice'] = pd.to_numeric(df['OnDemandPrice'], downcast="float")
+    fdf = df.assign(provider='Azure')
+
+    logger.info("INFO : Converting data to parquet file.")
+    fdf.to_parquet('on_demand_prices.parquet', engine='fastparquet')
+
+    s3_bucket = S3Bucket.load("capstone-boto3-bucket")
     
+    logger.info("INFO : Uploading parquet file to S3 bucket.")
+    s3_bucket.upload_from_path("on_demand_prices.parquet", "azure_data/on_demand_prices.parquet")
+    
+
 def get_token():
     credential = DefaultAzureCredential()
     scope = "https://management.azure.com/.default"
@@ -110,6 +135,7 @@ def get_azure_data( az_azs: str):
     instance_types = ["Standard_A1_v2", "Standard_A2_v2", "Standard_D2_v3"]
     for instance in instance_types:
         pull_spot_price_data_from_azure(az_azs, instance)
+    upload_on_demand_price_data()
     logger.info("INFO : Finished aws_data_extraction.")
 
 if __name__ == "__main__":

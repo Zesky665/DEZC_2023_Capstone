@@ -31,7 +31,8 @@ def redshift_setup():
     logger.info(f'INFO: Creating TEMP tables.')
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL, provider varchar(100) NOT NULL);")
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_SPEC_INFO( instance_type varchar(100) NOT NULL, free_tier BOOL NOT NULL, architecture varchar(100), cpu_speed REAL NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL, provider varchar(100) NOT NULL);")
-    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL, provider varchar(100) NOT NULL);")
+    
+    cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL, provider varchar(100) NOT NULL);")
     
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AZURE_SPOT_PRICES( az varchar(100) NOT NULL, instance_type varchar(100) NOT NULL, prod_desc varchar(100) NOT NULL, spot_price REAL NOT NULL, time_stamp varchar(100) NOT NULL, provider varchar(100) NOT NULL);")
     cursor.execute("CREATE TABLE IF NOT EXISTS TEMP_AZURE_SPEC_INFO( instance_type varchar(100) NOT NULL, vpc REAL NOT NULL, memory REAL NOT NULL, provider varchar(100) NOT NULL)")
@@ -117,7 +118,7 @@ def copy_azure_spot_prices_to_redshift():
     logger.info("INFO : Finished copying data.")
 
 @task(name="copy on-demand price data to redshift")
-def copy_aws_on_demand_to_redshift():
+def copy_on_demand_to_redshift():
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -136,7 +137,8 @@ def copy_aws_on_demand_to_redshift():
     conn.autocommit = True
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("copy TEMP_AWS_ON_DEMAND_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/aws_data/on_demand_prices' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
+    cursor.execute("copy TEMP_ON_DEMAND_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/aws_data/on_demand_prices' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
+    cursor.execute("copy TEMP_ON_DEMAND_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/azure_data/on_demand_prices' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
     logger.info("INFO : Finished copying data.")
  
     
@@ -242,8 +244,8 @@ def clean_azure_spot_price_data():
     conn.commit()
     logger.info("INFO : Finished copying data.")
         
-@task(name="clean aws on-demand data")
-def clean_aws_on_demand_data():
+@task(name="clean on-demand data")
+def clean_on_demand_data():
     logger = get_run_logger()
     logger.info("INFO : Begin cleaning on-demand data in redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -262,10 +264,10 @@ def clean_aws_on_demand_data():
     conn.autocommit = False
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_AWS_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL, provider varchar(100) NOT NULL);")
-    cursor.execute("INSERT INTO RAW_AWS_ON_DEMAND_PRICES (SELECT * FROM TEMP_AWS_ON_DEMAND_PRICES as A WHERE instance_type NOT IN (SELECT instance_type FROM RAW_AWS_ON_DEMAND_PRICES));")
+    cursor.execute("CREATE TABLE IF NOT EXISTS RAW_ON_DEMAND_PRICES( instance_type varchar(100) NOT NULL, on_demand_price REAL NOT NULL, provider varchar(100) NOT NULL);")
+    cursor.execute("INSERT INTO RAW_ON_DEMAND_PRICES (SELECT * FROM TEMP_ON_DEMAND_PRICES as A WHERE instance_type NOT IN (SELECT instance_type FROM RAW_ON_DEMAND_PRICES));")
     conn.commit()
-    cursor.execute("DROP TABLE TEMP_AWS_ON_DEMAND_PRICES")
+    cursor.execute("DROP TABLE TEMP_ON_DEMAND_PRICES")
     conn.commit()
     logger.info("INFO : Finished copying data.")
     
@@ -331,12 +333,12 @@ def copy_to_redshift():
     logger.info("INFO : Begin copying data to redshift.")
     redshift_setup()
     copy_aws_spot_prices_to_redshift()
-    copy_aws_on_demand_to_redshift()
+    copy_on_demand_to_redshift()
     copy_aws_spec_info_to_redshift()
     copy_azure_spot_prices_to_redshift()
     copy_azure_spec_info_to_redshift()
     clean_aws_spot_price_data()
-    clean_aws_on_demand_data()
+    clean_on_demand_data()
     clean_aws_spec_info_data()
     clean_azure_spot_price_data()
     clean_azure_spec_info_data()

@@ -21,7 +21,7 @@ models:
                 - unique
                 - not_null
 
-    - name: staging_aws_on_demand_prices
+    - name: staging_on_demand_prices
       description: "Stagind AWS On Demand Prices model"
       columns:
           - name: instance_type
