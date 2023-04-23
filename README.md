@@ -1,6 +1,12 @@
 # Collecting data on the cost of spot instances across the major Cloud Providers (AWS, Azure)
 
 
+## Problem
+When deciding on a cloud provider for a project we as data engineers have to consider lot of different variables. One of the most important ones is cost. Thanks to the way that most of the pricing is communicated by their respective providers it's difficult to get a simple comparison without manually looking for it across many different websites/screens/tabs/consoles.
+This project aims to make these types of questions answerable at a glance.
+
+(For the sake of simplicity I've stuck to one region and 3 tiers of a single service, although the project can easily be extended to include other offerings.)
+
 ## Objectives 
 
 - Create a DWH for staring pricing data from various cloud providers.
@@ -10,7 +16,7 @@
 
 ## Technology used
 
-- Cloud: AWS
+- Cloud: AWS (EC2, S3, Redshift)
 - Containerization: Docker with Docker-Compose
 - Infrastructure: Terraform
 - DWH: Redshift
