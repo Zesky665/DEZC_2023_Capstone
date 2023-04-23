@@ -47,6 +47,7 @@ If you want to run it with GitHub Actions
 ## Insights 
 - Lower powered AWS spot instances are often as costly as on-demand. Even when available the savings are much less than typically advertized.
 - Bigger instances come with bigger discounts. For example: m5a.large spot instances are 44% cheapter than on-demand. a1.medium spot instances are the same price as on-demand. 
+- Azure has much bigger discounts for spot instances as well as a lot more availability of spot instances. 
 ## To-Do
 
 - Add GCP Data.
