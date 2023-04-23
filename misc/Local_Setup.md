@@ -119,3 +119,19 @@ In the prefect_env variables add the same values that are in the prefect_env fil
 4. Generate keys. 
 Run the following command: 
 ```ssh-keygen -t rsa -b 4096 -m pem -f metabase_kp && openssl rsa -in metabase_kp -outform pem && mv metabase_kp metabase_kp.pem && chmod 400 metabase_kp.pem```
+
+5. Run the terraform script
+Navigate to the infra directory and run the following.
+
+`terraform init`
+`terraform plan -var-file=secrets.tfvars`
+`terraform apply -var-file=secrets.tfvars --auto-approve`
+
+6. Run docker-compose
+You can run the prefect agent and the metabase instance locally, simply navigate to the root of the project and run the following.
+`docker-compose up`
+
+You can afterwards open the containers in interactive mode via the docker-desktop GUI or via the following command. 
+`docker ps` - to get the id of the container
+`docker exec -it <container name/id> /bin/bash` - to start an interactive session.
+
