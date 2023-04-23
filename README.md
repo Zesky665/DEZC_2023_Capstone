@@ -27,10 +27,10 @@ This project aims to make these types of questions answerable at a glance.
 ## Setup instructions
 
 If you want to run it locally. 
-[Local setup](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/Local_Setup.md)
+[Local setup](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/Local_Setup.md)
 
 If you want to run it with GitHub Actions
-[GitHub Setup](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/GitHub_Setup.md)
+[GitHub Setup](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/GitHub_Setup.md)
 
  ## Data Ingestion
 
@@ -44,10 +44,10 @@ I used dbt to load the data into staging tables which were than merged into prod
 
 The table that is used for the metabase has the following lineage. 
 
-![dbt lineage](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/dbt_lineage.png)
+![dbt lineage](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/dbt_lineage.png)
 ## DWH Database Schema
 
-![Data diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/data_diagram.png)
+![Data diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/data_diagram.png)
 
 ## Data Sources: 
 
@@ -57,12 +57,12 @@ The table that is used for the metabase has the following lineage.
 
 ## Tech Diagram
 
-![Tech diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/tech_diagram.png)
+![Tech diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/tech_diagram.png)
 
 ## Dashboard
 [Link to dashboard](http://3.78.56.233:3000/public/dashboard/f2950c78-683a-4302-87e7-6d321980fda6)
 
-![Tech diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/final_dashboard.png)
+![Metabase dashboard](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/final_dashboard.png)
 ## Insights 
 - Lower powered AWS spot instances are often as costly as on-demand. Even when available the savings are much less than typically advertized.
 - Bigger instances come with bigger discounts. For example: m5a.large spot instances are 44% cheapter than on-demand. a1.medium spot instances are the same price as on-demand. 
