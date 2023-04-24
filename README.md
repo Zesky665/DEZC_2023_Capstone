@@ -2,6 +2,7 @@
 
 
 ## Problem
+
 When deciding on a cloud provider for a project we as data engineers have to consider lot of different variables. One of the most important ones is cost. Thanks to the way that most of the pricing is communicated by their respective providers it's difficult to get a simple comparison without manually looking for it across many different websites/screens/tabs/consoles.
 This project aims to make these types of questions answerable at a glance.
 
@@ -40,7 +41,7 @@ If you want to run it with GitHub Actions
 
 ## Transformation
 
-I used dbt to load the data into staging tables which were than merged into production tables that serve as datamarts. 
+I used dbt to load the data into staging tables which were then merged into a production table that serve as datamart. 
 
 The table that is used for the metabase has the following lineage. 
 
@@ -48,6 +49,14 @@ The table that is used for the metabase has the following lineage.
 ## DWH Database Schema
 
 ![Data diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/data_diagram.png)
+
+## DWH Optimization
+
+As part of the dbt transformations, the production tables have been assigned data distributions style and sort keys. 
+
+The data distribution style is KEY assigned to the `instance_type` column. This allows data realting to specific instance types to collocate, making quieries more performant. 
+
+The data is sorted according to the `time_stamp` column, allowing queries based on time and date to be more performant as the rows are automatically sorted according to date. 
 
 ## Data Sources: 
 

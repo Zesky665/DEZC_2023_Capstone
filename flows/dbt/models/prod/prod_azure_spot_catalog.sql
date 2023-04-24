@@ -10,7 +10,9 @@
 {{ 
     config(
         materialized='incremental',
-        unique_key=['instance_type', 'az', 'time_stamp', 'prod_desc']
+        unique_key=['instance_type', 'az', 'time_stamp', 'prod_desc'],
+        dist='instance_type',
+        sort='time_stamp' 
         ) 
     
 }}
