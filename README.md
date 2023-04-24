@@ -1,7 +1,7 @@
 # Collecting data on the cost of spot instances across the major Cloud Providers (AWS, Azure)
 
 
-## Problem
+## The Problem
 
 When deciding on a cloud provider for a project we as data engineers have to consider lot of different variables. One of the most important ones is cost. Thanks to the way that most of the pricing is communicated by their respective providers it's difficult to get a simple comparison without manually looking for it across many different websites/screens/tabs/consoles.
 This project aims to make these types of questions answerable at a glance.
@@ -54,7 +54,7 @@ The table that is used for the metabase has the following lineage.
 
 As part of the dbt transformations, the production tables have been assigned data distributions style and sort keys. 
 
-The data distribution style is KEY assigned to the `instance_type` column. This allows data realting to specific instance types to collocate, making quieries more performant. 
+The data distribution style is KEY assigned to the `instance_type` column. This allows data relating to specific instance types to collocate, making quieries more performant. 
 
 The data is sorted according to the `time_stamp` column, allowing queries based on time and date to be more performant as the rows are automatically sorted according to date. 
 
@@ -75,7 +75,7 @@ The data is sorted according to the `time_stamp` column, allowing queries based 
 ## Insights 
 - Lower powered AWS spot instances are often as costly as on-demand. Even when available the savings are much less than typically advertized.
 - Bigger instances come with bigger discounts. For example: m5a.large spot instances are 44% cheapter than on-demand. a1.medium spot instances are the same price as on-demand. 
-- Azure has much bigger discounts for spot instances as well as a lot more availability of spot instances. 
+- Azure has much bigger discounts for spot instances which indicates a lot more availability of spot instances. 
 ## To-Do
 
 - Add GCP Data.
