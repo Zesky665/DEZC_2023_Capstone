@@ -69,7 +69,7 @@ The data is sorted according to the `time_stamp` column, allowing queries based 
 ![Tech diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/tech_diagram.png)
 
 ## Dashboard
-[Link to dashboard](http://3.78.56.233:3000/public/dashboard/f2950c78-683a-4302-87e7-6d321980fda6)
+[Link to dashboard](http://3.78.56.233:3000/public/dashboard/f2950c78-683a-4302-87e7-6d321980fda6) (turned off after free trial expired, can be turned briefly on on request)
 
 ![Metabase dashboard](https://github.com/Zesky665/DEZC_2023_Capstone/blob/Final_Version/misc/final_dashboard.png)
 ## Insights 
