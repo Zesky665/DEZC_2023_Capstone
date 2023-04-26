@@ -5,6 +5,11 @@ variable "aws_region" {
   default     = "eu-central-1"
 }
 
+variable "s3_bucket_name" {
+  description = "S3 bucket name"
+  type        = string  
+}
+
 variable "redshift_user" {
   description = "Redshift user"
   type        = string

@@ -29,7 +29,7 @@ data "aws_availability_zones" "available" {
 
 // S3 Bucket Definition
 resource "aws_s3_bucket" "bucket" {
-  bucket        = "my-zoomcamp-capstone-bucket-zharec"
+  bucket        = var.s3_bucket_name
   force_destroy = true
 
   tags = {

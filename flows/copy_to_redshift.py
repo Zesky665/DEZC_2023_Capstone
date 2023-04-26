@@ -1,3 +1,4 @@
+import os
 from prefect_aws import AwsCredentials
 from prefect_sqlalchemy import DatabaseCredentials
 from prefect.blocks.system import Secret
@@ -39,7 +40,7 @@ def redshift_setup():
     logger.info(f'INFO: Finished redshift setup.')
     
 @task(name="Copy aws spot price data file to redshift")
-def copy_aws_spot_prices_to_redshift():
+def copy_aws_spot_prices_to_redshift(s3_bucket_name: str):
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -61,7 +62,7 @@ def copy_aws_spot_prices_to_redshift():
     aws_creds = AwsCredentials.load("aws-creds")
     client = aws_creds.get_boto3_session().client("s3")
     response = client.list_objects_v2(
-        Bucket='my-zoomcamp-capstone-bucket-zharec',
+        Bucket=s3_bucket_name,
         Prefix='aws_data/')
 
     contents = []
@@ -72,14 +73,14 @@ def copy_aws_spot_prices_to_redshift():
     for content in contents:
             logger.info("INFO : Connected to Redshift.")
             logger.info("INFO : Copy to {file_name} TEMP_Table.".format(file_name = content))
-            copy_str = "copy TEMP_AWS_SPOT_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/{file_name}' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(file_name = content)
+            copy_str = "copy TEMP_AWS_SPOT_PRICES from 's3://{s3_bucket_name}/{file_name}' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(s3_bucket_name=s3_bucket_name, file_name = content)
             cursor.execute(copy_str)
     conn.commit()
     logger.info("INFO : Finished copying data.")
     
     
 @task(name="Copy azure spot price data file to redshift")
-def copy_azure_spot_prices_to_redshift():
+def copy_azure_spot_prices_to_redshift(s3_bucket_name: str):
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -101,7 +102,7 @@ def copy_azure_spot_prices_to_redshift():
     aws_creds = AwsCredentials.load("aws-creds")
     client = aws_creds.get_boto3_session().client("s3")
     response = client.list_objects_v2(
-        Bucket='my-zoomcamp-capstone-bucket-zharec',
+        Bucket=s3_bucket_name,
         Prefix='azure_data/')
 
     contents = []
@@ -112,13 +113,13 @@ def copy_azure_spot_prices_to_redshift():
     for content in contents:
             logger.info("INFO : Connected to Redshift.")
             logger.info("INFO : Copy to {file_name} TEMP_Table.".format(file_name = content))
-            copy_str = "copy TEMP_AZURE_SPOT_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/{file_name}' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(file_name = content)
+            copy_str = "copy TEMP_AZURE_SPOT_PRICES from 's3://{s3_bucket_name}/{file_name}' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(s3_bucket_name=s3_bucket_name, file_name = content)
             cursor.execute(copy_str)
     conn.commit()
     logger.info("INFO : Finished copying data.")
 
 @task(name="copy on-demand price data to redshift")
-def copy_on_demand_to_redshift():
+def copy_on_demand_to_redshift(s3_bucket_name: str):
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -137,13 +138,13 @@ def copy_on_demand_to_redshift():
     conn.autocommit = True
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("copy TEMP_ON_DEMAND_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/aws_data/on_demand_prices' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
-    cursor.execute("copy TEMP_ON_DEMAND_PRICES from 's3://my-zoomcamp-capstone-bucket-zharec/azure_data/on_demand_prices' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
+    cursor.execute("copy TEMP_ON_DEMAND_PRICES from 's3://{s3_bucket_name}/aws_data/on_demand_prices' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(s3_bucket_name = s3_bucket_name))
+    cursor.execute("copy TEMP_ON_DEMAND_PRICES from 's3://{s3_bucket_name}/azure_data/on_demand_prices' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(s3_bucket_name = s3_bucket_name))
     logger.info("INFO : Finished copying data.")
  
     
 @task(name="copy aws spec data file to redshift")
-def copy_aws_spec_info_to_redshift():
+def copy_aws_spec_info_to_redshift(s3_bucket_name: str):
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     database_block = DatabaseCredentials.load("redshift-credentials")
@@ -162,7 +163,7 @@ def copy_aws_spec_info_to_redshift():
     conn.autocommit = True
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("copy TEMP_AWS_SPEC_INFO from 's3://my-zoomcamp-capstone-bucket-zharec/aws_data/aws_spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
+    cursor.execute("copy TEMP_AWS_SPEC_INFO from 's3://{s3_bucket_name}/aws_data/aws_spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(s3_bucket_name = s3_bucket_name))
     logger.info("INFO : Finished copying data.")
  
 @task(name="copy azure spec data file to redshift")
@@ -185,7 +186,7 @@ def copy_azure_spec_info_to_redshift():
     conn.autocommit = True
     logger.info("INFO : Connected to Redshift.")
     logger.info("INFO : Copy to TEMP_Table.")
-    cursor.execute("copy TEMP_AZURE_SPEC_INFO from 's3://my-zoomcamp-capstone-bucket-zharec/azure_data/azure_spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;")
+    cursor.execute("copy TEMP_AZURE_SPEC_INFO from 's3://{s3_bucket_name}/azure_data/azure_spec_info.parquet' iam_role 'arn:aws:iam::229947305276:role/redshift_copy_unload' parquet;".format(s3_bucket_name = s3_bucket_name))
     logger.info("INFO : Finished copying data.")
  
 @task(name="clean aws spot price data.")
@@ -328,15 +329,15 @@ def clean_azure_spec_info_data():
  
     
 @flow(name="aws_to_redshift_etl") 
-def copy_to_redshift():
+def copy_to_redshift(s3_bucket_name):
     logger = get_run_logger()
     logger.info("INFO : Begin copying data to redshift.")
     redshift_setup()
-    copy_aws_spot_prices_to_redshift()
-    copy_on_demand_to_redshift()
-    copy_aws_spec_info_to_redshift()
-    copy_azure_spot_prices_to_redshift()
-    copy_azure_spec_info_to_redshift()
+    copy_aws_spot_prices_to_redshift(s3_bucket_name)
+    copy_on_demand_to_redshift(s3_bucket_name)
+    copy_aws_spec_info_to_redshift(s3_bucket_name)
+    copy_azure_spot_prices_to_redshift(s3_bucket_name)
+    copy_azure_spec_info_to_redshift(s3_bucket_name)
     clean_aws_spot_price_data()
     clean_on_demand_data()
     clean_aws_spec_info_data()
@@ -345,5 +346,9 @@ def copy_to_redshift():
     logger.info("INFO : Finished copying data to redshift.")
  
 if __name__ == "__main__":
-
-    copy_to_redshift()
+    
+    s3_bucket_name = ""
+    if ["S3_BUCKET_NAME" in os.environ]:
+        s3_bucket_name = os.environ["S3_BUCKET_NAME"]
+        
+    copy_to_redshift(s3_bucket_name)

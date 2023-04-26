@@ -71,13 +71,13 @@ def deploy_aws_credentials_block(aws_key_id, aws_key, aws_region):
     
     
 @task(name="deploy_s3")
-def deploy_s3_block(aws_key_id, aws_key):
+def deploy_s3_block(aws_key_id, aws_key, s3_bucket_name):
     logger = get_run_logger()
     logger.info("INFO: Starting S3 block deployment.")
     
     # S3 values
     s3_block_name = "deployments"
-    bucket_name = "my-zoomcamp-capstone-bucket-zharec"
+    bucket_name = s3_bucket_name
     bucket_path = f'{bucket_name}/{s3_block_name}'
     
     logger.info(f'{s3_block_name} {bucket_name} {bucket_path}')
@@ -87,7 +87,7 @@ def deploy_s3_block(aws_key_id, aws_key):
 
     # S3 official bucket
     boto3 = S3Bucket(
-        bucket_name="my-zoomcamp-capstone-bucket-zharec",
+        bucket_name=s3_bucket_name,
         aws_credentials=aws_creds,
         basepath="subfolder"
     )
@@ -181,13 +181,13 @@ def deploy_dbt_profile(host, database, port, username, password):
     logger.info("INFO: Finished dbt profile block deployment.")
     
 @flow(name="deploy block flow")
-def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password, sub_id):
+def deploy_blocks(aws_key_id, aws_key, aws_region, s3_bucket_name, dbt_api_key, dbt_account_id, host, database, port, username, password, sub_id):
 
     logger = get_run_logger()
     logger.info("INFO: Starting block deployment.")
     create_aws_creds()
     deploy_aws_credentials_block(aws_key_id, aws_key, aws_region)
-    deploy_s3_block(aws_key_id, aws_key)
+    deploy_s3_block(aws_key_id, aws_key, s3_bucket_name)
     deploy_redshift_password(password)
     deploy_redshift_credentials(host, database, port, username, password)
     deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
@@ -201,6 +201,7 @@ if __name__ == "__main__":
     aws_key_id = ""
     aws_key = ""
     aws_region = ""
+    s3_bucket_name = ""
     dbt_api_key = ""
     dbt_account_id = 0
     host = "" 
@@ -218,10 +219,13 @@ if __name__ == "__main__":
         
     if ("AWS_REGION" in os.environ):
         aws_region = os.environ['AWS_REGION']
+                
+    if ["S3_BUCKET_NAME" in os.environ]:
+        s3_bucket_name = os.environ["S3_BUCKET_NAME"]
         
     if ("DBT_API_KEY" in os.environ):
         dbt_api_key = os.environ['DBT_API_KEY']
- 
+
     if ("DBT_ACCOUNT" in os.environ):
         dbt_account_id = os.environ['DBT_ACCOUNT']
         
@@ -244,4 +248,4 @@ if __name__ == "__main__":
         sub_id = os.environ['AZ_SUB_ID']
     
     dbt_account_id = int(dbt_account_id)
-    deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password, sub_id)
+    deploy_blocks(aws_key_id, aws_key, aws_region, s3_bucket_name, dbt_api_key, dbt_account_id, host, database, port, username, password, sub_id)
