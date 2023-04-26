@@ -180,33 +180,6 @@ def deploy_dbt_profile(host, database, port, username, password):
     
     logger.info("INFO: Finished dbt profile block deployment.")
     
-@task(name="deploy ecs task block")
-def deploy_ecs_task_block():
-    aws_creds = AwsCredentials.load("aws-creds")
-    
-    # ECS Task values
-    ecs_task_block_name = "ecs-flow-runner"
-    cpu_value = "1024"
-    cpu_memory = "2048"
-    cpu_image = 'zharec/prefect_agent:latest'
-    execution_role_arn = 'arn:aws:iam::229947305276:role/prefect-agent-execution-role-capstone'
-    task_role_arn = 'arn:aws:iam::229947305276:role/prefect-agent-task-role-capstone'
-    launch_type = "FARGATE_SPOT"
-    
-    esc_task = ECSTask(
-    name=ecs_task_block_name,
-    cluster="arn:aws:ecs:eu-central-1:229947305276:cluster/default",
-    aws_credentials=aws_creds,
-    image=cpu_image,
-    cpu=cpu_value,
-    memory=cpu_memory,
-    stream_output=True,
-    execution_role_arn=execution_role_arn,
-    task_role_arn=task_role_arn,
-    launch_type=launch_type
-)
-    esc_task.save(ecs_task_block_name, overwrite=True)
-    
 @flow(name="deploy block flow")
 def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, host, database, port, username, password, sub_id):
 
@@ -220,7 +193,6 @@ def deploy_blocks(aws_key_id, aws_key, aws_region, dbt_api_key, dbt_account_id, 
     deploy_dbt_credentials_block(dbt_api_key, dbt_account_id)
     deploy_dbt_profile(host, database, port, username, password)
     deploy_azure_sub_id(sub_id)
-    # deploy_ecs_task_block()
     
     logger.info("INFO: Finished block deployment.")
     
