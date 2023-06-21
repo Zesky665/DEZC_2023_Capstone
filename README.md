@@ -43,7 +43,7 @@ If you want to run it with GitHub Actions
 ## Dashboard
 [Link to dashboard](http://3.78.56.233:3000/public/dashboard/f2950c78-683a-4302-87e7-6d321980fda6)
 
-![Tech diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/final/misc/final_dashboard.png)
+![Tech diagram](https://github.com/Zesky665/DEZC_2023_Capstone/blob/main/misc/final_dashboard.png)
 ## Insights 
 - Lower powered AWS spot instances are often as costly as on-demand. Even when available the savings are much less than typically advertized.
 - Bigger instances come with bigger discounts. For example: m5a.large spot instances are 44% cheapter than on-demand. a1.medium spot instances are the same price as on-demand. 
