@@ -13,7 +13,7 @@
 - Cloud: AWS
 - Containerization: Docker with Docker-Compose
 - Infrastructure: Terraform
-- DWH: Redshift
+- DWH: Redshift with dbt core.
 - Orchestration: Prefect
 - Data Transformation: Pandas
 - Data Visualization: Metabase
